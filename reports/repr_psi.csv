@@ -1,0 +1,5 @@
+variable,mediana_aprob,mediana_rech,pct_falt_aprob,pct_falt_rech,psi,semaforo
+amount,13600.0,10000.0,0.0,0.0,0.651,rojo
+risk_score,685.0,649.0,0.0,89.183,0.887,rojo
+dti,17.99,19.32,0.001,8.577,0.555,rojo
+state,,,,,0.023,verde

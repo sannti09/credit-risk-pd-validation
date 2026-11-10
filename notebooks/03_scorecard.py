@@ -11,11 +11,11 @@ from credit_risk.woe import WoEBinner
 
 P_MAX = 0.05
 df = duckdb.connect("data/credit.duckdb", read_only=True).sql("select * from model_sample").df()
-train, oot = df[df.split == "train"], df[df.split == "oot"]
+train, valid, oot = (df[df.split == s] for s in ("train", "valid", "oot"))
 features = open("reports/selected_features.txt").read().split()
 
 b = WoEBinner().fit(train, "target", features)
-X_tr, X_oot = b.transform(train), b.transform(oot)
+X_tr, X_val, X_oot = b.transform(train), b.transform(valid), b.transform(oot)
 
 # Eliminación hacia atrás: fuera variables con signo incorrecto o no significativas.
 # Signo esperado: coeficiente < 0 (WoE alto = grupo de menor riesgo -> baja P(malo)).
@@ -44,7 +44,7 @@ pts.to_csv("reports/scorecard_points.csv", index=False)
 
 # Desempeño: modelo propio vs. benchmark Lending Club (int_rate y sub_grade como score de riesgo)
 rows = []
-for name, d, X in [("train 2012-14", train, X_tr), ("oot 2015", oot, X_oot)]:
+for name, d, X in [("train 2013", train, X_tr), ("valid 2014", valid, X_val), ("oot 2015", oot, X_oot)]:
     pd_hat = m.predict(sm.add_constant(X[cols]))
     sg = d["sub_grade"].rank(method="dense")  # A1 < A2 < ... < G5 = más riesgo
     rows += [(name, "scorecard propio", gini(d.target, pd_hat), ks(d.target, pd_hat)),
@@ -56,3 +56,11 @@ print("\n", perf.to_string(index=False))
 
 s = score_from_logit(m.predict(sm.add_constant(X_tr[cols]), which="linear"))
 print(f"\nScore train: min {s.min():.0f}, p50 {pd.Series(s).median():.0f}, max {s.max():.0f}")
+
+# Guardar el modelo para la validación (fase 3). models/*.pkl no se versiona: se regenera con este script.
+import pickle
+from pathlib import Path
+
+Path("models").mkdir(exist_ok=True)
+m.remove_data()  # quita los datos de entrenamiento del objeto (88 MB -> KB)
+pickle.dump({"binner": b, "model": m, "features": cols}, open("models/scorecard.pkl", "wb"))

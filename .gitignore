@@ -22,3 +22,6 @@ kaggle.json
 
 # Notas personales (no publicar)
 proyecto_riesgo_credito.md
+
+# Modelos serializados (se regeneran con notebooks/03_scorecard.py)
+models/*.pkl

@@ -1,38 +1,38 @@
 ,iv_train,n_bins,fuerza,iv_oot,caida_rel,motivo,seleccionada
-fico_low,0.1308,11,media,0.1462,-0.1175,,True
-annual_inc,0.088,14,débil,0.0596,0.3228,,True
-avg_cur_bal,0.0667,13,débil,0.0697,-0.0454,,True
-tot_cur_bal,0.058,11,débil,0.057,0.0185,corr > 0.7 con avg_cur_bal,False
-acc_open_past_24mths,0.0551,9,débil,0.102,-0.8512,,True
-total_rev_hi_lim,0.053,13,débil,0.0616,-0.1628,,True
-dti,0.0475,12,débil,0.0564,-0.1858,,True
-num_tl_op_past_12m,0.043,6,débil,0.0804,-0.8725,,True
-home_ownership,0.039,4,débil,0.0444,-0.1388,,True
-mort_acc,0.038,6,débil,0.0405,-0.0653,,True
-percent_bc_gt_75,0.0365,8,débil,0.0276,0.2447,,True
-mo_sin_rcnt_tl,0.0355,12,débil,0.0545,-0.5334,,True
-mo_sin_old_rev_tl_op,0.0315,11,débil,0.038,-0.2065,,True
-bc_util,0.0315,15,débil,0.0232,0.2636,corr > 0.7 con percent_bc_gt_75,False
-mths_since_recent_inq,0.0303,11,débil,0.0547,-0.8076,,True
-purpose,0.022,9,débil,0.0219,0.007,,True
-revol_util,0.021,13,débil,0.0132,0.3741,,True
-credit_history_months,0.0205,10,débil,0.0221,-0.0774,corr > 0.7 con mo_sin_old_rev_tl_op,False
-inq_last_6mths,0.0202,3,débil,0.0382,-0.8889,,True
-revol_bal,0.0179,9,inútil,0.0203,-0.1371,IV < 0.02,False
-emp_length_years,0.0168,6,inútil,0.0208,-0.2385,IV < 0.02,False
-addr_state,0.0112,29,inútil,0.014,-0.2424,IV < 0.02,False
-total_acc,0.0095,11,inútil,0.0027,0.7169,IV < 0.02,False
-verification_status,0.0092,3,inútil,0.0521,-4.6549,IV < 0.02,False
-loan_amnt,0.0065,7,inútil,0.0045,0.3113,IV < 0.02,False
-mths_since_last_record,0.0026,5,inútil,0.0115,-3.3379,IV < 0.02,False
-installment,0.0018,4,inútil,0.0006,0.6823,IV < 0.02,False
-delinq_2yrs,0.0011,2,inútil,0.002,-0.7793,IV < 0.02,False
-mths_since_last_delinq,0.0011,6,inútil,0.0033,-1.9812,IV < 0.02,False
-pct_tl_nvr_dlq,0.0011,4,inútil,0.0031,-1.9137,IV < 0.02,False
-initial_list_status,0.0009,2,inútil,0.0211,-23.2594,IV < 0.02,False
-open_acc,0.0002,6,inútil,0.0021,-8.0549,IV < 0.02,False
+fico_low,0.1248,12,media,0.1478,-0.1842,,True
+annual_inc,0.1069,13,media,0.0595,0.4433,,True
+avg_cur_bal,0.0737,14,débil,0.0704,0.0438,,True
+tot_cur_bal,0.0652,8,débil,0.0565,0.1335,corr > 0.7 con avg_cur_bal,False
+total_rev_hi_lim,0.0563,13,débil,0.0625,-0.1104,,True
+dti,0.0493,9,débil,0.0554,-0.1239,,True
+acc_open_past_24mths,0.044,8,débil,0.102,-1.3194,,True
+mort_acc,0.0407,4,débil,0.0402,0.012,,True
+home_ownership,0.0403,3,débil,0.0444,-0.1017,,True
+mo_sin_rcnt_tl,0.04,9,débil,0.0537,-0.3418,,True
+num_tl_op_past_12m,0.0396,4,débil,0.0784,-0.979,,True
+percent_bc_gt_75,0.0344,6,débil,0.0268,0.2218,,True
+mo_sin_old_rev_tl_op,0.0343,11,débil,0.0377,-0.0999,,True
+mths_since_recent_inq,0.0333,11,débil,0.0549,-0.6469,,True
+bc_util,0.0304,11,débil,0.0229,0.2467,corr > 0.7 con percent_bc_gt_75,False
+revol_util,0.0257,10,débil,0.0131,0.4909,,True
+purpose,0.0236,7,débil,0.0206,0.1252,,True
+credit_history_months,0.0236,9,débil,0.0219,0.07,corr > 0.7 con mo_sin_old_rev_tl_op,False
+inq_last_6mths,0.0197,3,inútil,0.0382,-0.9408,IV < 0.02,False
+revol_bal,0.0162,8,inútil,0.0203,-0.2542,IV < 0.02,False
+addr_state,0.0153,29,inútil,0.014,0.0893,IV < 0.02,False
+emp_length_years,0.0153,4,inútil,0.0206,-0.3519,IV < 0.02,False
+total_acc,0.0145,10,inútil,0.0027,0.8135,IV < 0.02,False
+loan_amnt,0.0114,6,inútil,0.0036,0.6796,IV < 0.02,False
+installment,0.0055,4,inútil,0.0043,0.2153,IV < 0.02,False
+verification_status,0.0015,3,inútil,0.0521,-34.3446,IV < 0.02,False
+mths_since_last_record,0.0011,7,inútil,0.0122,-9.9645,IV < 0.02,False
+initial_list_status,0.001,2,inútil,0.0211,-20.5859,IV < 0.02,False
+mths_since_last_delinq,0.0009,5,inútil,0.0031,-2.6126,IV < 0.02,False
+pct_tl_nvr_dlq,0.0008,3,inútil,0.0027,-2.5621,IV < 0.02,False
+open_acc,0.0001,4,inútil,0.0018,-20.9106,IV < 0.02,False
 pub_rec_bankruptcies,0.0,1,inútil,0.0,1.0,IV < 0.02,False
 pub_rec,0.0,1,inútil,0.0,1.0,IV < 0.02,False
-application_type,0.0,1,inútil,0.0001,-463266.7278,IV < 0.02,False
+delinq_2yrs,0.0,1,inútil,0.0,1.0,IV < 0.02,False
+application_type,0.0,1,inútil,0.0001,-41864.1384,IV < 0.02,False
 collections_12_mths_ex_med,0.0,1,inútil,0.0,1.0,IV < 0.02,False
 tax_liens,0.0,1,inútil,0.0,1.0,IV < 0.02,False

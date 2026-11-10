@@ -1,0 +1,4 @@
+muestra,n,pd_media,dr_observada,hl_stat,hl_p,semaforo
+train 2013,100422,0.1233,0.1233,20.2429,0.0095,rojo
+valid 2014,162570,0.13,0.1373,116.8592,0.0,rojo
+oot 2015,283087,0.1295,0.149,1079.5288,0.0,rojo
