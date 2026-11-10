@@ -439,3 +439,20 @@ sin fecha de último pago asignados al mes 1 (impacto menor).
   idéntica de `accepted_*.csv.gz` en `data/raw/` queda sin uso; no se borra (regla: no tocar datos crudos).
 - README en inglés (reclutadores arriba, detalle técnico abajo, resumen en español) con gráfico de calibración
   claro/oscuro generado por `notebooks/13_readme_chart.py`.
+
+## D23. API de scoring y Docker — `api/`, `Dockerfile`, `notebooks/14_export_model.py`
+- **El modelo se exporta a JSON** (`models/scorecard_v1.json`, 7 KB, versionado en git): cortes, WoE, coeficientes,
+  intercepto, ajuste de recalibración (+0,184) y dominio. Razones: un `pickle` ejecuta código al cargarse (riesgo de
+  seguridad), ata la API a pandas/statsmodels y no es auditable; el JSON se lee, se compara entre versiones y se
+  revisa en un *pull request*.
+- **Paridad verificada:** el puntuador JSON (`api/scorer.py`, solo biblioteca estándar) reproduce la PD del modelo
+  oficial con diferencia máxima de 2·10⁻¹⁶ y el mismo dominio (prueba en el exportador; falla si no coincide).
+- **Endpoints:** `POST /score` (PD, score, dentro de dominio, 3 motivos de rechazo) · `GET /model` · `GET /health`.
+  Validación de entrada con Pydantic (p. ej. FICO 300–850 → error 422 si no). Campos faltantes → grupo MISSING.
+- **Motivos de rechazo** (*reason codes*): puntos que pierde cada variable frente a su mejor grupo; se devuelven las
+  3 mayores. Es la explicabilidad que un regulador exige para negar un crédito.
+- **Fuera de dominio** (FICO < 660 o DTI > 35): `in_domain = false`, sin PD (condición del informe, D16).
+- **Docker:** `python:3.12-slim`, solo FastAPI + uvicorn (versiones fijas), usuario sin privilegios, healthcheck;
+  `.dockerignore` deja fuera datos, notebooks y pickles.
+- **Verificado en contenedor** (Docker 29.9, imagen de 227 MB): `/health` ok, `/score` igual al resultado local
+  (PD 15,3%, score 536), fuera de dominio sin PD, entrada inválida → 422, `/docs` 200, proceso corre como `appuser`.

@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "duckdb>=2.0.0",
+    "fastapi>=0.162.4",
     "jupyterlab>=4.6.6",
     "matplotlib>=3.11.2",
     "numpy>=2.5.4",
@@ -16,6 +17,7 @@ dependencies = [
     "pyarrow>=26.0.1",
     "scikit-learn>=1.9.1",
     "statsmodels>=0.15.0",
+    "uvicorn>=0.54.0",
 ]
 
 [build-system]
@@ -24,6 +26,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=9.2.0",
     "ruff>=0.17.4",
 ]

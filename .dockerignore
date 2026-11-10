@@ -1,0 +1,11 @@
+# Solo se copian api/ y models/scorecard_v1.json; todo lo demás queda fuera del contexto de build
+data/
+.venv/
+.git/
+notebooks/
+reports/
+docs/
+tests/
+models/*.pkl
+proyecto_riesgo_credito.md
+**/__pycache__

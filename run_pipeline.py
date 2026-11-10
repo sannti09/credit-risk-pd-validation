@@ -10,7 +10,7 @@ import duckdb
 
 SQL = ["01_load_raw", "02_quality_checks", "03_clean", "04_model_sample", "05_load_rejected"]
 SCRIPTS = ["02_feature_selection", "03_scorecard", "04_validation", "05_representativeness", "06_recalibration",
-           "07_challenger", "09_monitoring", "08_validation_report", "10_ifrs9_pd", "11_ifrs9_lgd",
+           "14_export_model", "07_challenger", "09_monitoring", "08_validation_report", "10_ifrs9_pd", "11_ifrs9_lgd",
            "12_ifrs9_ecl", "13_readme_chart"]
 
 Path("models").mkdir(exist_ok=True)

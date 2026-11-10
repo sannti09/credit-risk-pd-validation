@@ -62,6 +62,21 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 - **Validation report:** [`reports/informe_validacion.md`](reports/informe_validacion.md) (generated from results, in Spanish)
 - **Decision log:** [`docs/decisiones.md`](docs/decisiones.md) — every modeling decision with its rationale (D1–D21, in Spanish)
 
+## Scoring API
+
+The official model is exported to a versioned JSON spec (`models/scorecard_v1.json`) and served with FastAPI.
+No pickle in production: the lightweight scorer reproduces the model's PD exactly (max difference 2e-16).
+
+```bash
+docker build -t credit-pd-api .
+docker run -p 8000:8000 credit-pd-api        # docs at http://localhost:8000/docs
+curl -X POST localhost:8000/score -H "Content-Type: application/json" \
+  -d '{"fico_low": 690, "dti": 18.5, "annual_inc": 65000, "revol_util": 55, "home_ownership": "RENT"}'
+```
+
+Response: PD, score, whether the applicant is inside the model's domain, and the top-3 **reason codes**
+(variables that cost the most points). Out-of-domain applicants (FICO < 660 or DTI > 35) get no PD.
+
 ## Reproduce
 
 1. Download the [Lending Club dataset from Kaggle](https://www.kaggle.com/datasets/wordsforthewise/lending-club)
@@ -70,7 +85,7 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
    ```bash
    uv sync
    uv run python run_pipeline.py   # full pipeline, ~3 minutes
-   uv run pytest                   # 17 tests
+   uv run pytest                   # 20 tests
    ```
 
 ## Limitations
@@ -82,7 +97,7 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 
 ## Stack
 
-Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · pytest · uv
+Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · pytest · uv
 
 ---
 
