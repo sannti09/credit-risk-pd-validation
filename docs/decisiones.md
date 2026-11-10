@@ -464,3 +464,65 @@ sin fecha de último pago asignados al mes 1 (impacto menor).
   entrada inválida → 422).
 - No necesita datos: las pruebas son sintéticas y la API solo usa `models/scorecard_v1.json`.
 - Insignia de estado en el README.
+
+## D25. Comparación con el modelo de referencia de consumo de la SFC (MRCO) — `notebooks/15_sfc_mrco.py`
+**Fuentes** (`docs/referencias/`): matrices A y B y fórmula → CE 047 de 2016, Anexo 5 Cap. II CBCF (**verificado en
+el texto**); factor K → CE 026 de 2022 (solo créditos originados desde 2023 → no aplica); incumplimiento de consumo =
+mora > 90 días (texto del Cap. II); vigencia → CE 004 de 2026: la nueva Circular Básica Financiera rige desde el
+1-jun-2026 y la depuración "no implica reclasificación de cartera" en riesgo de crédito.
+**Verificación de supuestos (búsqueda, nov-2026):**
+- **PDI sin garantía 75% → 85% → 100%: POR VERIFICAR.** La CE 032 de 2015 confirma que la PDI de deudores en
+  incumplimiento sube gradualmente con los días transcurridos, pero no se encontraron los valores en fuente oficial.
+- **Matriz A vs. B: CONFIRMADO (fuentes secundarias confiables: Banco de la República, Asobancaria, CE 017 de 2023).**
+  Componente individual procíclico (CIP) con Matriz A; contracíclico (CIC) en fase de acumulación =
+  máx(CIC anterior, PE Matriz B − PE Matriz A) → la provisión individual total ≈ PE con Matriz B en acumulación;
+  en desacumulación se usa la Matriz A. (Hubo medidas transitorias en 2024–25; vigencia actual por confirmar.)
+- **Separados vs. consolidados: PARCIALMENTE CONFIRMADO.** La excepción existe: el Decreto 1851 de 2013 exceptúa a
+  los establecimientos de crédito de aplicar NIC 39 / NIIF 9 a la cartera y su deterioro (rige la regla SFC). Que la
+  excepción aplique a estados **separados** y que los **consolidados** usen NIIF 9 completa está POR VERIFICAR en el
+  Decreto 2420 de 2015 y sus modificaciones.
+
+**Método:** segmento General-Otros (préstamo personal sin garantía, < 72 meses → ajuste por plazo = 1).
+PE = PI (matriz) × PDI × saldo. **Aproximación clave:** el puntaje del MRCO usa variables del buró colombiano que
+LC no tiene; la calificación se asigna con la PD 12m del modelo propio al nivel de la Matriz A más cercano;
+mora > 90 días → Incumplimiento.
+
+| Calificación | % saldo | PD 12m modelo | PI Matriz A | PI Matriz B |
+|---|---|---|---|---|
+| AA | 26,1% | 1,8% | 2,10% | 3,88% |
+| A | 53,3% | 5,2% | 3,88% | 5,67% |
+| BB | 16,1% | 10,2% | 12,68% | 21,72% |
+| B | 2,0% | 15,5% | 14,16% | 23,20% |
+| CC | 1,6% | 24,4% | 22,57% | 36,40% |
+| Incumplimiento | 1,0% | 100% | 100% | 100% |
+
+| Medida | US$ M | % saldo |
+|---|---|---|
+| SFC — Matriz A | 221,1 | 4,77% |
+| **NIIF 9 — base** | 223,6 | 4,82% |
+| **NIIF 9 — ponderada (reportada)** | 238,1 | 5,13% |
+| SFC — Matriz B | 335,0 | 7,22% |
+
+**Puente SFC (Matriz A) → NIIF 9 base** (`reports/sfc_vs_ifrs9_bridge.csv`, un factor a la vez):
+
+| Paso | Efecto (US$ M) |
+|---|---|
+| SFC Matriz A | 221,1 |
+| PDI 75% → LGD observada 90,7% | +43,4 |
+| PI de la matriz → PD 12m del modelo | +11,1 |
+| Etapa 2 a vida restante (NIIF 9) | +25,7 |
+| Saldo amortizado + descuento a tasa efectiva | **−77,8** |
+| **NIIF 9 base** | **223,6** |
+
+**Lectura (corregida con el puente):**
+- La coincidencia Matriz A ≈ NIIF 9 es **compensación de efectos**: NIIF 9 suma por la mayor severidad (+43),
+  la PD del modelo (+11) y la vida restante en etapa 2 (+26), pero resta **78** porque proyecta el saldo que se
+  amortiza (préstamos a 36 meses pagan capital rápido) y descuenta las pérdidas; la regla SFC aplica la PI al saldo
+  actual completo, sin descuento. *(La explicación inicial atribuía la compensación a la PD; el puente mostró que la
+  PD sube la pérdida y que el factor que más resta es la amortización/descuento.)*
+- La **Matriz B** (base del componente contracíclico en acumulación) da +41% sobre la ECL ponderada: la regla local
+  es más conservadora que NIIF 9.
+- La LGD observada de LC (90,7%) supera la PDI regulatoria (75%): para cartera P2P con venta de castigos, la PDI de
+  la SFC subestimaría la severidad.
+**Limitaciones:** calificación aproximada (no es el puntaje real del MRCO); PDI sin verificar; cartera de EE. UU.
+evaluada con parámetros calibrados para Colombia → ejercicio de comparación metodológica, no una provisión real.

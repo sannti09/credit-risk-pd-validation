@@ -35,6 +35,7 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 | IFRS 9 portfolio (Mar 2019) | 582,796 loans · US$ 4,638 M · stages 88.8% / 10.2% / 1.0% of balance |
 | Observed LGD | **90.7%** (discounted recoveries of charged-off loans) |
 | Expected credit loss | **US$ 238.1 M (5.1% coverage)**, probability-weighted across 3 scenarios |
+| Colombian regulator benchmark (SFC MRCO) | Matrix A: US$ 221.1 M (4.8%) · Matrix B (stress): US$ 335.0 M (7.2%) |
 
 ## Things a validator would ask about
 
@@ -60,6 +61,7 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 | 2. PD model | Monotonic coarse classing, WoE/IV, feature selection, logistic scorecard (PDO 20), GBM challenger with monotonic constraints | `notebooks/02, 03, 07`, `src/credit_risk/woe.py` |
 | 3. Validation | Gini/KS, PSI/CSI, Hosmer-Lemeshow, binomial test by band, approved vs. rejected, recalibration + margin of conservatism, monitoring | `notebooks/04–06, 08, 09`, `src/credit_risk/validation.py` |
 | 4. IFRS 9 | Staging (DPD + FICO-drop SICR), PD term structure, LGD, monthly ECL with amortizing EAD and EIR discounting, scenarios | `sql/07`, `notebooks/10–12`, `src/credit_risk/ifrs9.py` |
+| 5. SFC benchmark | Provision under Colombia's consumer reference model (MRCO, matrices A/B) vs. IFRS 9 ECL | `notebooks/15`, `docs/referencias/` |
 
 - **Validation report:** [`reports/informe_validacion.md`](reports/informe_validacion.md) (generated from results, in Spanish)
 - **Decision log:** [`docs/decisiones.md`](docs/decisiones.md) — every modeling decision with its rationale (D1–D21, in Spanish)
@@ -109,5 +111,6 @@ Proyecto de riesgo de crédito de punta a punta sobre 2,26 millones de préstamo
 modelo de PD (scorecard logístico con WoE y challenger de gradient boosting), **validación independiente** con
 semáforos (discriminación, calibración, estabilidad, representatividad y sobreajuste) y **pérdida esperada NIIF 9**
 sobre una cartera viva de US$ 4.638 M (etapas, PD 12 meses y de vida, LGD observada de 90,7%, escenarios
-ponderados). Resultado: ECL de US$ 238,1 M (5,1% del saldo). El informe de validación y el registro de las 21
+ponderados). Resultado: ECL de US$ 238,1 M (5,1% del saldo), comparada con la provisión del modelo de referencia
+de consumo de la SFC (MRCO): US$ 221,1 M con la Matriz A y US$ 335,0 M con la Matriz B. El informe de validación y el registro de las 21
 decisiones de modelado están en español en `reports/` y `docs/`.
