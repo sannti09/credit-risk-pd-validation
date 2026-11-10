@@ -322,9 +322,10 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
 - **PD de vida desde la originación:** modelo oficial (recalibrado + MoC, D16).
 - **Fuera de dominio (4,8%, DTI > 35):** PD de segmento = default observado de ese segmento en la última cohorte
   madura (2015): **22,6%**. NIIF 9 exige ECL para toda la cartera; el modelo no extrapola, así que se usa el segmento.
-- **Etapa 2:** PD de vida × **2** (tope 99%). Razón: SICR significa que el riesgo de vida al menos se duplicó; sin
-  historial mensual no se puede estimar la PD actual, así que el factor 2 es un **piso coherente con la definición**.
-  Juicio experto → sensibilidad en el paso de ECL.
+- **Etapa 2:** PD de vida × **2** (tope 99%). **Juicio experto** (NIIF 9 no lo exige): sin historial mensual no se
+  puede estimar la PD actual del cliente; el factor 2 refleja que la etapa 2 implica más riesgo que al originar.
+  Trata igual a un préstamo con mora 16–30 días y a uno con caída de FICO (limitación). Rango honesto: sensibilidad
+  1,5–3 (D21).
 - **Etapa 3:** PD = 100%.
 - **Estructura temporal:** curva del momento del default con las cohortes maduras (mes de default ≈ último pago + 1):
   9% de los defaults ocurre en los primeros 6 meses, **31% al mes 12**, 54% al 18, 74% al 24.
@@ -361,8 +362,11 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
 - **Cálculo mensual:** ECL = Σ_t PD marginal(t) × LGD × EAD(t) × DF(t). EAD(t) = saldo según el calendario de
   amortización (cuota fija); DF = descuento a la tasa del préstamo. Horizonte: 12 meses (etapa 1), vida restante
   (etapa 2); etapa 3 = LGD × saldo.
-- **PD como mejor estimación:** NIIF 9 pide una PD insesgada, no conservadora (el MoC es un concepto de capital IRB).
-  Se usa el modelo oficial porque su nivel **reprodujo el observado en OOT** (15,1% vs 14,9%), no como colchón.
+- **PD como mejor estimación (corregido en D21):** NIIF 9 pide una PD insesgada, no conservadora. El ajuste del
+  modelo oficial incluye una **tendencia** de default creciente (+1,4 pts/año, estimada con 2013→2014). Para NIIF 9
+  se presenta como **supuesto prospectivo explícito** (la tendencia observada continúa), no como colchón de capital.
+  Advertencia: la decisión de incluirla surgió tras ver 2015 (D14), y el 96% de la cartera son originaciones 2016–18
+  sin cohorte madura para comprobarla. Sensibilidad sin tendencia en D21.
 
 | Etapa | Préstamos | Saldo (US$ M) | ECL (US$ M) | Cobertura |
 |---|---|---|---|---|
@@ -388,3 +392,42 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
   a etapa 3 es conservador y explica ~US$ 84 M. Los supuestos de juicio experto de etapa 2 mueven la ECL < 10%.
 - **Limitaciones:** escenarios sin modelo macroeconómico (en un banco se ligarían a desempleo/tasas con un modelo
   satélite); sin prepagos; LGD única para las tres etapas.
+
+## D21. Correcciones de la revisión independiente de NIIF 9 — **reemplaza las cifras de D17 y D20**
+1. **Etapa 3 a 90 días (antes 30).** NIIF 9 presume el default a los 90 días; 31–89 días es etapa 2 (backstop de 30).
+   LC no separa 31–89 de 90–120, pero **los días de mora se aproximan con los meses desde el último pago**: ≥ 3 meses
+   → etapa 3 (5.406 préstamos, US$ 46 M); < 3 meses → etapa 2 (7.075, US$ 58 M); sin fecha de pago → etapa 3
+   (conservador). La limitación de D17 queda resuelta en buena medida. Aproximación: un pago parcial puede mover la
+   fecha del último pago.
+2. **Préstamos vencidos vivos** (≥ 36 meses en libros, 4.969 préstamos, US$ 2,4 M): antes quedaban con PD 0 porque la
+   curva de default termina en el mes 36. Ahora → etapa 2 ("vencido sin cancelar") y riesgo del último año del
+   préstamo (`effective_timing`: mob 24, 12 meses de horizonte).
+3. **PD:** la tendencia se presenta como supuesto prospectivo (ver D20) + sensibilidad sin ella.
+4. **LGD:** corte por antigüedad (defaults ≥ 24 meses antes del corte, año ≤ 2016): **90,7%** (antes 90,4% con ≤ 2017).
+5. Columnas de `ifrs9_pd` renombradas (`pd_vida_base` = modelo; `pd_vida_ajustada` = con ×2 de etapa 2); PD recortadas
+   a [0, 1]; el notebook 10 usa el mismo módulo que la ECL (sin fórmulas duplicadas); verificación SQL = Python.
+
+**Etapas vigentes:** 1 → 88,8% del saldo · 2 → 10,2% · 3 → 1,0%.
+
+| Etapa | Préstamos | Saldo (US$ M) | ECL (US$ M) | Cobertura |
+|---|---|---|---|---|
+| 1 | 496.629 | 4.117,3 | 141,4 | 3,4% |
+| 2 | 80.761 | 474,4 | 40,5 | 8,5% |
+| 3 | 5.406 | 46,1 | 41,8 | 90,7% |
+| **Total** | 582.796 | 4.637,8 | **223,6** | **4,8%** |
+
+**ECL ponderada por escenarios = US$ 238,1 M (5,1% del saldo)** — cifra a reportar (antes 284,3).
+
+| Sensibilidad (sobre base 223,6) | ECL (US$ M) | Variación |
+|---|---|---|
+| Late 31–120 todo en etapa 3 (regla anterior) | 270,7 | +21,1% |
+| Late 31–120 todo en etapa 2 | 186,6 | −16,5% |
+| PD sin tendencia (solo recalibración 2014) | 207,4 | −7,3% |
+| Multiplicador etapa 2: 1,5 / 3 | 212,5 / 249,1 | −5,0% / +11,4% |
+| Umbral SICR caída FICO 30 / 70 | 243,9 / 213,9 | +9,1% / −4,3% |
+| LGD con defaults hasta 2017 | 222,9 | −0,3% |
+| LGD 80% / 45% (Basilea, no aplica) | 197,3 / 111,0 | −11,8% / −50,4% |
+
+**Pendientes documentados (no corregibles con estos datos):** escenarios sin modelo macro (pesos y multiplicadores de
+juicio experto, NIIF 9 5.5.17 pide información razonable y sustentable → en un banco, modelo satélite); 373 defaults
+sin fecha de último pago asignados al mes 1 (impacto menor).

@@ -13,14 +13,26 @@ import pandas as pd
 
 
 def assign_stage(port: pd.DataFrame, fico_drop: float = 50, fico_floor: float = 600,
-                 late31_stage: int = 3) -> np.ndarray:
-    late31 = port.loan_status.isin(["Default", "Late (31-120 days)"]).to_numpy()
-    sicr = ((port.loan_status == "Late (16-30 days)") | (port.fico_low - port.fico_actual >= fico_drop)
-            | (port.fico_actual < fico_floor)).to_numpy()
+                 late31_stage: str | int = "auto") -> np.ndarray:
+    """Misma regla que sql/07 (D21). late31_stage: "auto" (>= 3 meses sin pago -> 3, si no 2), o 2 / 3 fijo."""
+    status = port.loan_status
+    late31 = (status == "Late (31-120 days)").to_numpy()
+    sin_pago = port.meses_sin_pago.fillna(99).to_numpy()
+    if late31_stage == "auto":
+        late31_s3 = late31 & (sin_pago >= 3)
+    else:
+        late31_s3 = late31 & (int(late31_stage) == 3)
+    sicr = (late31 | (status == "Late (16-30 days)") | (port.fico_low - port.fico_actual >= fico_drop)
+            | (port.fico_actual < fico_floor) | (port.mob >= 36)).to_numpy()
     stage = np.where(sicr, 2, 1)
-    stage = np.where(late31, late31_stage, stage)
-    stage = np.where(port.loan_status.eq("Default").to_numpy(), 3, stage)  # > 120 días siempre etapa 3
-    return stage
+    return np.where(late31_s3 | (status == "Default").to_numpy(), 3, stage)
+
+
+def effective_timing(mob: np.ndarray, n_left: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Préstamos vencidos (mob >= 36) que siguen vivos: se tratan como en su último año (mob 24, 12 meses de
+    horizonte) para que no queden con PD 0 (la curva de default termina en el mes 36). D21."""
+    vencido = mob >= 36
+    return np.where(vencido, 24, mob), np.where(vencido, 12, n_left)
 
 
 def marginal_pd(p_life: np.ndarray, mob: np.ndarray, f: np.ndarray, horizon: int = 36) -> np.ndarray:

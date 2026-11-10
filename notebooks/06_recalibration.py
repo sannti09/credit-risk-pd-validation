@@ -54,6 +54,7 @@ print("\nDefault observado por año:", {s: round(100 * x.target.mean(), 1) for s
 from credit_risk.model import PDModel
 
 domain = {"fico_low": (float(d["train"].fico_low.min()), None), "dti": (None, float(d["train"].dti.max()))}
-final = PDModel(b, m, cols, delta=float(delta_moc), domain=domain, version="1.0 (MoC tendencia train->valid)")
+final = PDModel(b, m, cols, delta=float(delta_moc), domain=domain, version="1.0 (MoC tendencia train->valid)",
+                delta_sin_tendencia=float(delta))
 pickle.dump(final, open("models/pd_model_final.pkl", "wb"))
 print(f"\nModelo oficial guardado: delta = {delta_moc:+.3f}, dominio = {domain}")

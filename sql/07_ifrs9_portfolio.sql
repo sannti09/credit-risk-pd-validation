@@ -3,17 +3,19 @@
 -- Aquí SÍ se usan variables posteriores a la originación (estado, saldo, FICO actual): NIIF 9 mide la cartera
 -- a una fecha, no predice al originar. No es fuga.
 --
--- ETAPAS
---   3 (deterioro crediticio): 'Default' (> 120 días) y 'Late (31-120 days)'. LC no separa 31-89 de 90-120 días;
---     se asigna todo a etapa 3 (opción conservadora: PD = 100%). Sensibilidad con etapa 2 en el análisis.
---   2 (aumento significativo del riesgo, SICR): 'Late (16-30 days)', o caída de FICO >= 50 puntos desde la
---     originación, o FICO actual < 600.
+-- ETAPAS (D17, corregido en D21)
+--   Días de mora ≈ meses desde el último pago × 30 (LC no separa 31-89 de 90-120 dentro de 'Late (31-120)').
+--   3 (deterioro, presunción NIIF 9 de 90 días): 'Default', o 'Late (31-120)' con >= 3 meses sin pago
+--     (o sin fecha de pago: conservador).
+--   2 (SICR): 'Late (31-120)' con < 3 meses sin pago (backstop de 30 días), 'Late (16-30 days)', caída de FICO
+--     >= 50 puntos, FICO actual < 600, o préstamo vencido (>= 36 meses en libros) sin cancelar.
 --   1: el resto (al día o 'In Grace Period' sin señales de SICR).
 CREATE OR REPLACE TABLE ifrs9_portfolio AS
 WITH p AS (
     SELECT l.*,
            try_cast(r.last_fico_range_low AS DOUBLE) AS fico_actual,
            try_cast(r.out_prncp AS DOUBLE)           AS saldo,          -- EAD al corte (capital pendiente)
+           date_diff('month', strptime(r.last_pymnt_d, '%b-%Y')::DATE, DATE '2019-03-01') AS meses_sin_pago,
            date_diff('month', l.issue_date, DATE '2019-03-01') AS mob    -- meses en libros
     FROM loans l
     JOIN loans_raw r ON l.id = try_cast(r.id AS BIGINT)
@@ -24,17 +26,22 @@ SELECT *,
        greatest(36 - mob, 1)                         AS meses_restantes,
        fico_low - fico_actual                        AS caida_fico,
        CASE
-           WHEN loan_status IN ('Default', 'Late (31-120 days)') THEN 3
-           WHEN loan_status = 'Late (16-30 days)'
+           WHEN loan_status = 'Default'
+             OR (loan_status = 'Late (31-120 days)' AND coalesce(meses_sin_pago, 99) >= 3) THEN 3
+           WHEN loan_status IN ('Late (31-120 days)', 'Late (16-30 days)')
              OR fico_low - fico_actual >= 50
-             OR fico_actual < 600                     THEN 2
+             OR fico_actual < 600
+             OR mob >= 36                             THEN 2
            ELSE 1
        END                                           AS etapa,
        CASE
-           WHEN loan_status IN ('Default', 'Late (31-120 days)') THEN 'mora > 30 días'
+           WHEN loan_status = 'Default'
+             OR (loan_status = 'Late (31-120 days)' AND coalesce(meses_sin_pago, 99) >= 3) THEN 'mora >= 90 días'
+           WHEN loan_status = 'Late (31-120 days)'   THEN 'mora 31-89 días'
            WHEN loan_status = 'Late (16-30 days)'    THEN 'mora 16-30 días'
            WHEN fico_low - fico_actual >= 50         THEN 'caída FICO >= 50'
            WHEN fico_actual < 600                    THEN 'FICO actual < 600'
+           WHEN mob >= 36                            THEN 'vencido sin cancelar'
            ELSE 'sin señales'
        END                                           AS motivo_etapa
 FROM p

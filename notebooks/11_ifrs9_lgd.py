@@ -37,10 +37,12 @@ tabs = {"total": w(d).to_frame("total").T,
         "por banda FICO": d.groupby("banda_fico", observed=True).apply(w, include_groups=False)}
 res = pd.concat(tabs, names=["corte", "grupo"])
 res.round(4).to_csv("reports/ifrs9_lgd.csv")
-# Parámetro: LGD descontada ponderada por EAD, defaults hasta 2017 (2018-19 con cobranza posiblemente incompleta)
-base = d[d.anio_default <= 2017]
-lgd_param = float(np.average(base.lgd_desc, weights=base.ead))
-pd.DataFrame({"parametro": ["lgd"], "valor": [lgd_param]}).to_csv("reports/ifrs9_lgd_param.csv", index=False)
+# Parámetro: LGD descontada ponderada por EAD con defaults de >= 24 meses de antigüedad al corte (año <= 2016):
+# cobranza completa. Se reporta también la versión hasta 2017 como sensibilidad (D21).
+lgd_of = lambda x: float(np.average(x.lgd_desc, weights=x.ead))  # noqa: E731
+lgd_param, lgd_2017 = lgd_of(d[d.anio_default <= 2016]), lgd_of(d[d.anio_default <= 2017])
+pd.DataFrame({"parametro": ["lgd", "lgd_hasta_2017"], "valor": [lgd_param, lgd_2017]}).to_csv(
+    "reports/ifrs9_lgd_param.csv", index=False)
 pd.set_option("display.width", 140)
 print(res.round(3).to_string())
-print(f"\nLGD parámetro (descontada, defaults <= 2017): {lgd_param:.3f}")
+print(f"\nLGD parámetro (descontada, defaults <= 2016): {lgd_param:.3f} · hasta 2017: {lgd_2017:.3f}")

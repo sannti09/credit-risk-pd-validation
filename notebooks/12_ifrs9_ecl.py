@@ -1,12 +1,13 @@
 """NIIF 9 — ECL de la cartera al corte (D20): base, escenarios ponderados y sensibilidades.
 Salidas: reports/ifrs9_ecl_by_stage.csv, reports/ifrs9_scenarios.csv, reports/ifrs9_sensitivity.csv"""
 import pickle
+from dataclasses import replace
 
 import duckdb
 import numpy as np
 import pandas as pd
 
-from credit_risk.ifrs9 import assign_stage, ecl
+from credit_risk.ifrs9 import assign_stage, ecl, effective_timing
 
 STAGE2_MULT = 2.0
 # Escenarios forward-looking (overlay de juicio experto; sin modelo macro): multiplicador de PD, LGD, peso
@@ -20,14 +21,19 @@ LGD = float(pd.read_csv("reports/ifrs9_lgd_param.csv").valor.iloc[0])
 seg_pd = con.sql("select avg(target) from model_sample where split='oot' and (dti > 34.99 or dti is null)"
                  ).fetchall()[0][0]
 p_life = model.predict_pd(port).fillna(seg_pd).to_numpy()  # fuera de dominio -> PD de segmento (D18)
+p_sin_tend = replace(model, delta=model.delta_sin_tendencia).predict_pd(port).fillna(seg_pd).to_numpy()
+LGD_2017 = float(pd.read_csv("reports/ifrs9_lgd_param.csv").set_index("parametro").valor["lgd_hasta_2017"])
+assert (assign_stage(port) == port.etapa.to_numpy()).all(), "regla de etapas SQL != Python"
 
-args = dict(p_life=p_life, mob=port.mob.to_numpy(), balance=port.saldo.to_numpy(),
-            annual_rate=port.int_rate.to_numpy(), n_left=port.meses_restantes.to_numpy(), f=f)
+mob_eff, n_left = effective_timing(port.mob.to_numpy(), port.meses_restantes.to_numpy())  # vencidos (D21)
+args = dict(p_life=p_life, mob=mob_eff, balance=port.saldo.to_numpy(),
+            annual_rate=port.int_rate.to_numpy(), n_left=n_left, f=f)
 
 
-def run(stage=None, lgd=LGD, stage2_mult=STAGE2_MULT, pd_mult=1.0):
+def run(stage=None, lgd=LGD, stage2_mult=STAGE2_MULT, pd_mult=1.0, p=None):
     st = assign_stage(port) if stage is None else stage
-    return ecl(st, lgd=lgd, stage2_mult=stage2_mult, pd_mult=pd_mult, **args)
+    a = args if p is None else {**args, "p_life": p}
+    return ecl(st, lgd=lgd, stage2_mult=stage2_mult, pd_mult=pd_mult, **a)
 
 
 def by_stage(r):
@@ -56,7 +62,10 @@ tot = base.ecl.sum() / 1e6
 sens = {
     "multiplicador etapa 2 = 1,5": run(stage2_mult=1.5),
     "multiplicador etapa 2 = 3": run(stage2_mult=3.0),
-    "Late 31-120 en etapa 2 (no 3)": run(stage=assign_stage(port, late31_stage=2)),
+    "Late 31-120 todo en etapa 3 (regla anterior)": run(stage=assign_stage(port, late31_stage=3)),
+    "Late 31-120 todo en etapa 2": run(stage=assign_stage(port, late31_stage=2)),
+    "PD sin tendencia (solo recalibración 2014)": run(p=p_sin_tend),
+    "LGD con defaults hasta 2017": run(lgd=LGD_2017),
     "umbral SICR caída FICO = 30": run(stage=assign_stage(port, fico_drop=30)),
     "umbral SICR caída FICO = 70": run(stage=assign_stage(port, fico_drop=70)),
     "LGD = 80%": run(lgd=0.80),

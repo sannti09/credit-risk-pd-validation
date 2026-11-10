@@ -24,6 +24,7 @@ class PDModel:
     delta: float                 # ajuste de intercepto (recalibración + MoC)
     domain: dict[str, tuple[float | None, float | None]] = field(default_factory=dict)
     version: str = ""
+    delta_sin_tendencia: float | None = None  # solo recalibración a valid 2014, sin tendencia (sensibilidad)
 
     def in_domain(self, df: pd.DataFrame) -> pd.Series:
         ok = pd.Series(True, index=df.index)
