@@ -1,0 +1,7 @@
+muestra,modelo,gini,ks
+train 2012-14,scorecard propio,0.32,0.231
+train 2012-14,LC int_rate,0.293,0.216
+train 2012-14,LC sub_grade,0.3,0.221
+oot 2015,scorecard propio,0.334,0.24
+oot 2015,LC int_rate,0.357,0.262
+oot 2015,LC sub_grade,0.357,0.262

@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Datos (no versionar datos crudos ni procesados)
+data/raw/*
+data/processed/*
+!data/**/.gitkeep
+*.duckdb
+*.duckdb.wal
+
+# Secretos
+.env
+kaggle.json
+
+# Sistema
+.DS_Store
+
+# Notas personales (no publicar)
+proyecto_riesgo_credito.md
