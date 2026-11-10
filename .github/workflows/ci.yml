@@ -1,0 +1,48 @@
+# Integración continua (D24): en cada push y pull request a main
+# 1) pruebas + chequeo de errores de código  2) construye la imagen Docker y prueba la API dentro del contenedor.
+# No usa datos: las pruebas son sintéticas y la API solo necesita models/scorecard_v1.json (versionado).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Instalar dependencias
+        run: uv sync --frozen
+      - name: Errores de código (ruff E9, F)
+        run: uv run ruff check --select E9,F .
+      - name: Pruebas
+        run: uv run pytest -q
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagen
+        run: docker build -t credit-pd-api:ci .
+      - name: Probar la API en el contenedor
+        run: |
+          docker run -d --name api -p 8000:8000 credit-pd-api:ci
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && break; sleep 1; done
+          curl -sf localhost:8000/health
+          r=$(curl -sf -X POST localhost:8000/score -H 'Content-Type: application/json' \
+                -d '{"fico_low": 690, "dti": 18.5, "annual_inc": 65000, "revol_util": 55}')
+          echo "$r"
+          echo "$r" | python3 -c "import json,sys; r=json.load(sys.stdin); assert r['in_domain'] and 0 < r['pd'] < 1"
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:8000/score \
+                   -H 'Content-Type: application/json' -d '{"fico_low": 1000, "dti": 10}')
+          test "$code" = "422"

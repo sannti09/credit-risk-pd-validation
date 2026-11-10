@@ -456,3 +456,11 @@ sin fecha de último pago asignados al mes 1 (impacto menor).
   `.dockerignore` deja fuera datos, notebooks y pickles.
 - **Verificado en contenedor** (Docker 29.9, imagen de 227 MB): `/health` ok, `/score` igual al resultado local
   (PD 15,3%, score 536), fuera de dominio sin PD, entrada inválida → 422, `/docs` 200, proceso corre como `appuser`.
+
+## D24. Integración continua — `.github/workflows/ci.yml`
+- En cada *push* / *pull request* a `main`: (1) `uv sync --frozen` (versiones exactas del lockfile), chequeo de
+  errores de código con ruff (reglas E9 y F: sintaxis, nombres no definidos, imports rotos; el estilo no bloquea)
+  y las pruebas; (2) si pasan, construye la imagen Docker y prueba la API dentro del contenedor (health, score,
+  entrada inválida → 422).
+- No necesita datos: las pruebas son sintéticas y la API solo usa `models/scorecard_v1.json`.
+- Insignia de estado en el README.

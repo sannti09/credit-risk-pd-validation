@@ -1,5 +1,7 @@
 # Credit Risk: PD Model, Independent Validation & IFRS 9 ECL
 
+[![CI](https://github.com/sannti09/credit-risk-pd-validation/actions/workflows/ci.yml/badge.svg)](https://github.com/sannti09/credit-risk-pd-validation/actions/workflows/ci.yml)
+
 End-to-end credit risk project on **2.26 million Lending Club consumer loans (2007–2018)**: a probability-of-default
 (PD) scorecard built in SQL and Python, validated the way a bank's model validation team would, and used to compute
 **IFRS 9 expected credit losses** on a live portfolio of US$ 4.6 billion.
@@ -97,7 +99,7 @@ Response: PD, score, whether the applicant is inside the model's domain, and the
 
 ## Stack
 
-Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · pytest · uv
+Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · GitHub Actions · pytest · uv
 
 ---
 
