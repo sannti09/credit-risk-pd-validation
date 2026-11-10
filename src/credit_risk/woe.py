@@ -14,6 +14,8 @@ Reglas:
 """
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -98,7 +100,7 @@ class WoEBinner:
             b = pd.cut(x, e, right=True, labels=labels).astype(str)  # prefijo 00, 01.. = orden
         else:
             keep = self.categories_[x.name]
-            b = x.where(x.isin(keep), OTHER).astype(str)
+            b = x.astype(object).where(x.isin(keep), OTHER).astype(str)  # robusto a dtype categórico
         return b.where(x.notna(), MISSING)
 
     # ---------- API ----------
@@ -119,10 +121,15 @@ class WoEBinner:
         return self
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Reemplaza cada variable por su WoE. Grupos no vistos en train -> WoE 0 (neutral)."""
-        out = {}
+        """Reemplaza cada variable por su WoE. Grupos no vistos en train -> WoE 0 (neutral), con alerta."""
+        out, unseen = {}, {}
         for f, t in self.tables_.items():
-            out[f] = self._assign(df[f]).map(t["woe"]).fillna(0.0).astype(float)
+            w = self._assign(df[f]).map(t["woe"])
+            if w.isna().any():
+                unseen[f] = int(w.isna().sum())
+            out[f] = w.fillna(0.0).astype(float)
+        if unseen:
+            warnings.warn(f"Grupos no vistos en train (WoE=0): {unseen}", stacklevel=2)
         return pd.DataFrame(out, index=df.index)
 
     def iv_summary(self) -> pd.DataFrame:

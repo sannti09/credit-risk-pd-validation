@@ -33,6 +33,9 @@ saldos pendientes, `last_*`, hardship y settlement: existen solo después, y har
 - NULL resultante → grupo "MISSING" en el WoE.
 
 ## D5. Coarse classing y selección de variables — `notebooks/02_feature_selection.py`
+> ⚠️ **Reemplazada:** las cifras de esta sección son de una versión anterior de la muestra. Vigentes: **D9** (selección,
+> modelo, desempeño), **D11** (calibración) y `reports/`. Se conserva por trazabilidad.
+
 - **Score de Lending Club fuera del modelo** (`grade`, `sub_grade`, `int_rate`): se usan solo como **benchmark**.
   Un scorecard con el score de otro no demuestra capacidad de construir uno.
 - **Coarse classing monótono:** 20 grupos finos por cuantiles → se fusionan vecinos hasta que la tasa de default
@@ -46,6 +49,9 @@ saldos pendientes, `last_*`, hardship y settlement: existen solo después, y har
   su IV → la población cambió entre cohortes; revisar con PSI en la fase de validación.
 
 ## D6. Scorecard logístico — `notebooks/03_scorecard.py`
+> ⚠️ **Reemplazada:** las cifras de esta sección son de una versión anterior de la muestra. Vigentes: **D9** (selección,
+> modelo, desempeño), **D11** (calibración) y `reports/`. Se conserva por trazabilidad.
+
 - **Modelo:** regresión logística (statsmodels) sobre WoE de las 13 variables de D5.
 - **Eliminación hacia atrás:** fuera si coeficiente con signo incorrecto (> 0 → señal de colinealidad) o p > 0,05.
   Resultado: las 13 se mantienen, todas con signo correcto y significativas.
@@ -62,6 +68,9 @@ saldos pendientes, `last_*`, hardship y settlement: existen solo después, y har
   solicitud es un resultado razonable. **Pendiente (fase 3):** calibración — default OOT 14,9% vs. 13,2% en train → ver D7.
 
 ## D7. Validación — `notebooks/04_validation.py`, `src/credit_risk/validation.py`
+> ⚠️ **Reemplazada:** las cifras de esta sección son de una versión anterior de la muestra. Vigentes: **D9** (selección,
+> modelo, desempeño), **D11** (calibración) y `reports/`. Se conserva por trazabilidad.
+
 **Hallazgo previo (corregido):** el primer CSI dio ~0,84 en 5 variables. Causa: en 2012 el ~52% de los préstamos
 no traía variables de buró (`avg_cur_bal`, `total_rev_hi_lim`, `num_tl_op_past_12m`, `mo_sin_*`); desde 2013 vienen
 completas. El grupo MISSING (7% de train) desaparecía en OOT → artefacto de recolección, no cambio de población.
@@ -145,8 +154,9 @@ los plazos; los rechazados no tienen plazo). PSI calculado **solo sobre valores 
    (copia no oficial del diccionario). En los datos, justo desde esa fecha aparecen valores > 850 (imposibles en FICO)
    y el p90 salta de 709 a 720–734 → otro score (probablemente VantageScore). **Decisión:** usar el score de
    rechazados solo antes del 5-nov-2013 (≈ 600 mil solicitudes con score y DTI válidos).
-2. **Faltantes:** 48% de rechazados 2013–15 sin score. Se excluyen del PSI y se reportan aparte. Sin ellos el PSI
-   sigue en rojo → la diferencia es real, no un artefacto del faltante.
+2. **Faltantes:** 48% de rechazados 2013–15 sin score en el dato crudo; al restringir a FICO (antes del 5-nov-2013)
+   queda **89% sin score válido** en la ventana (600 mil con score). Se excluyen del PSI y se reportan aparte. Sin ellos
+   el PSI sigue en rojo → la diferencia es real, no un artefacto del faltante.
 3. **Antigüedad laboral de rechazados no es confiable:** 86,5% viene como "< 1 year" (vs. 8,2% en aprobados) →
    valor por defecto de solicitudes incompletas. **Se excluye** de la comparación.
 
@@ -173,7 +183,7 @@ Se ajusta **solo con train/valid** y se evalúa en OOT 2015 sin tocarlo. La reca
 | Original | 12,9% | 14,9% | −2,0 pts | 9 de 10 |
 | Intercepto ajustado a 2014 | 13,7% | 14,9% | −1,2 pts | 9 |
 | Platt (nivel + pendiente) con 2014 | 13,7% | 14,9% | −1,2 pts | 8 |
-| **Intercepto + MoC por tendencia** | **15,1%** | 14,9% | **+0,2 pts** | **1** |
+| **Intercepto + MoC por tendencia** | **15,1%** | 14,9% | **+0,15 pts** (PD > observado) | **1** |
 
 - **Por qué no basta recalibrar con el último año:** el default sube ~1,4 pts por año (12,3% → 13,7% → 14,9%).
   Calibrar con 2014 siempre llega un año tarde. Platt casi no mejora: la pendiente (0,94) estaba bien; el problema
@@ -188,3 +198,64 @@ Se ajusta **solo con train/valid** y se evalúa en OOT 2015 sin tocarlo. La reca
 - **NIIF 9:** este ajuste por tendencia se reemplazaría por un ajuste *forward-looking* con escenarios macro.
 - **Frase para entrevista:** *"El modelo ordenaba bien pero subestimaba el nivel. Recalibrar al último año no bastaba
   por la tendencia creciente, así que agregué un margen de conservadurismo estimado sin usar la muestra OOT."*
+
+## D12. Challenger: gradient boosting — `notebooks/07_challenger.py`
+- **Modelo:** `HistGradientBoostingClassifier` (scikit-learn) con las 36 variables candidatas en crudo (sin WoE;
+  maneja faltantes y categóricas). Mismas reglas: train 2013, hiperparámetros elegidos por Gini en valid 2014
+  (grilla de 8), OOT 2015 solo para el resultado final.
+- **Fuga detectada y corregida:** `installment` salió 3ª en importancia pese a IV ≈ 0,002. Con plazo fijo de 36 meses,
+  cuota + monto determinan la tasa de interés, que LC fija según su grado → el GBM reconstruía el score de LC.
+  Se excluyó. (El scorecard no la usaba: su IV individual era casi nulo; el GBM sí explota la interacción.)
+
+| Gini (KS) | Train 2013 | Valid 2014 | OOT 2015 |
+|---|---|---|---|
+| Scorecard (13 var.) | 0,326 (0,238) | 0,313 (0,226) | 0,325 (0,237) |
+| **GBM (36 var.)** | 0,487 (0,356) | 0,349 (0,253) | **0,361 (0,261)** |
+| LC sub_grade (benchmark) | 0,298 | 0,319 | 0,357 |
+
+- **Lectura:** el GBM supera al scorecard por **~3,6 pts de Gini en OOT** y empata con el grado de LC usando solo
+  datos de solicitud y buró. Pero hay **sobreajuste** (0,49 en train vs 0,35 en valid): aprende ruido de 2013, aunque
+  la ventaja se mantiene fuera de muestra. También subestima la PD en OOT (13,0% vs 14,9%) → misma recalibración.
+- **Variables más importantes:** FICO, ingreso, monto, cuentas abiertas 24m, DTI (coherente con el scorecard).
+- **Campeón vs. challenger (criterio de validador):** el GBM discrimina mejor, pero el scorecard es explicable por
+  puntos, monótono y más fácil de defender ante regulador. Decisión: **scorecard sigue como campeón**; el GBM sirve como
+  benchmark de cuánto poder se deja sobre la mesa (~3,6 pts) y como candidato si se acompaña de explicabilidad (SHAP)
+  y restricciones de monotonía.
+
+## D13. GBM regularizado contra sobreajuste — `notebooks/07_challenger.py` (reemplaza el GBM de D12)
+**Controles:** árboles poco profundos (profundidad 2–4) · hojas ≥ 1.000–3.000 clientes · early stopping contra
+**valid 2014** (otro año, no una partición de 2013) · monotonía por variable (signo de Spearman en train) ·
+`max_features` 0,5 · L2. Se excluye además `addr_state` (50 categorías, IV ≈ 0,01, proxy geográfico).
+**Regla de selección (tipo "1 error estándar"):** las 24 configuraciones quedaron dentro de 0,005 del mejor Gini
+en valid (TOL) → entre ellas se elige la de menor brecha train−valid (la más simple): profundidad 2, hojas ≥ 3.000, 650 árboles.
+
+| Gini | Train 2013 | Valid 2014 | OOT 2015 | Brecha train−valid |
+|---|---|---|---|---|
+| Scorecard | 0,326 | 0,313 | 0,325 | 0,013 |
+| GBM sin controles (D12) | 0,487 | 0,349 | 0,361 | **0,138** |
+| **GBM regularizado** | 0,363 | 0,333 | **0,340** | **0,030** |
+| LC sub_grade | 0,298 | 0,319 | 0,357 | — |
+
+- **Brecha de sobreajuste: 0,138 → 0,030** (**no cumple** el umbral de 0,03: 0,0303 > 0,03; ninguna de las 24 configuraciones lo cumplió). Parte de la brecha
+  no es sobreajuste sino cambio de año: el propio scorecard pierde 0,013 de 2013 a 2014.
+- **Costo:** el GBM regularizado pierde ~2 pts de Gini en OOT frente al GBM sin controles (0,361 → 0,340). Ventaja
+  sobre el scorecard: +1,6 pts.
+- **Lectura honesta:** el GBM sin controles generalizó bien en 2015 *a pesar* de su brecha; la brecha es un
+  **riesgo** (inestable ante otros cambios de población), no una pérdida segura. El validador prefiere el modelo
+  regularizado: menor riesgo de modelo, monótono y más explicable, a cambio de algo de poder.
+- **Monotonía:** garantiza que, por ejemplo, más FICO nunca suba la PD → el modelo es defendible variable por variable.
+
+## D14. Limitaciones del proceso (revisión independiente, fases 2–3)
+Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni fugas; hallazgos de proceso:
+1. **OOT 2015 no es 100% ciego.** Los números del MoC (D11) se calcularon sin 2015, pero la *decisión* de agregar un
+   MoC por tendencia surgió de ver la subestimación en 2015 (D9). No hay otra cohorte madura (2016+ es inmadura,
+   D3) para una prueba nueva → se declara como limitación. El Gini OOT (sin ajustes) sí es limpio.
+2. **Valid 2014 es optimista:** se usa para seleccionar variables, early stopping y elegir hiperparámetros del GBM.
+   Su Gini se reporta, pero el resultado de referencia es OOT 2015. Sesgo estimado en la grilla del GBM: 0,001–0,003.
+3. **El GBM reconstruye parte del precio de LC:** con las variables permitidas predice `int_rate` con R² ≈ 0,33
+   (dato del revisor, no reverificado). No es fuga determinista (a diferencia de `installment`), pero parte de su
+   ventaja puede venir de replicar el criterio de LC.
+4. **WoE de grupos no vistos en train = 0 (neutral).** Afecta 10 casos en OOT (2 de `annual_inc`, 7 de `dti`
+   y 1 categoría nueva de `home_ownership`). Ahora `WoEBinner.transform` emite una alerta con el conteo.
+5. **Puntos redondeados:** la suma de puntos enteros del scorecard puede diferir del score continuo en unos pocos
+   puntos (13 variables × ±0,5). Probado en `tests/test_metrics.py`.

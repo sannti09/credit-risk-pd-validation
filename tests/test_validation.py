@@ -20,3 +20,20 @@ def test_calibration_ok_when_pd_is_true():
     # Si la PD real es el doble, el binomial debe detectar subestimación
     t2 = binomial_by_band(pd.qcut(p, 5, labels=False), y, p / 2)
     assert (t2.semaforo == "rojo").all()
+
+
+def test_psi_new_category_is_large_but_finite():
+    base = pd.Series(list("AB") * 500)
+    new = pd.Series(list("ABC") * 333)  # categoría C no existe en la base
+    v = psi(base, new)
+    assert np.isfinite(v) and v > 0.25
+
+
+def test_hosmer_lemeshow_degrees_of_freedom():
+    from scipy import stats
+
+    rng = np.random.default_rng(2)
+    p = pd.Series(rng.uniform(0.05, 0.3, 5000))
+    y = pd.Series((rng.random(5000) < p).astype(int))
+    stat, pval = hosmer_lemeshow(y, p, g=10)
+    assert abs(pval - stats.chi2.sf(stat, 8)) < 1e-12  # gl = g - 2
