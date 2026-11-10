@@ -431,3 +431,11 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
 **Pendientes documentados (no corregibles con estos datos):** escenarios sin modelo macro (pesos y multiplicadores de
 juicio experto, NIIF 9 5.5.17 pide información razonable y sustentable → en un banco, modelo satélite); 373 defaults
 sin fecha de último pago asignados al mes 1 (impacto menor).
+
+## D22. Reproducibilidad y README de portafolio
+- `run_pipeline.py` corre todo en orden (SQL + scripts) en ~2,5 min; probado: resultados idénticos (solo ruido de
+  redondeo en el decimal 16).
+- Ambos archivos crudos se leen desde `data/raw/lending_club_kaggle/` (carpeta tal como viene de Kaggle). La copia
+  idéntica de `accepted_*.csv.gz` en `data/raw/` queda sin uso; no se borra (regla: no tocar datos crudos).
+- README en inglés (reclutadores arriba, detalle técnico abajo, resumen en español) con gráfico de calibración
+  claro/oscuro generado por `notebooks/13_readme_chart.py`.
