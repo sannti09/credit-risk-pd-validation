@@ -170,7 +170,8 @@ los plazos; los rechazados no tienen plazo). PSI calculado **solo sobre valores 
 - **Tasa de aprobación:** 15% (2013) → 5% (2018).
 - **Soporte del modelo** (rechazados con FICO y DTI válidos): **59% con FICO < 660** (mínimo de aprobados), 19% con
   DTI > 39; solo **30%** cae dentro del rango de los aprobados.
-- **Dominio de aplicación declarado:** solicitantes que cumplen la política de LC (FICO ≥ 660, DTI ≤ 39). Fuera de ese
+- **Dominio de aplicación declarado:** solicitantes que cumplen la política de LC (FICO ≥ 660, DTI ≤ 39).
+  → **Corregido en D16:** el dominio se define con los rangos de *train* (DTI ≤ 35), no con todos los aprobados. Fuera de ese
   rango el modelo extrapola a perfiles que nunca vio.
 - **Limitación menor:** el score de rechazados solo cubre ene–oct 2013, mientras que los aprobados cubren 2013–2015.
 - **Parceling (D8, paso 3): no factible.** Los rechazados traen 5 variables; el scorecard usa 13 de buró que no tienen.
@@ -259,3 +260,33 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
    y 1 categoría nueva de `home_ownership`). Ahora `WoEBinner.transform` emite una alerta con el conteo.
 5. **Puntos redondeados:** la suma de puntos enteros del scorecard puede diferir del score continuo en unos pocos
    puntos (13 variables × ±0,5). Probado en `tests/test_metrics.py`.
+
+## D15. Informe de validación con semáforos — `notebooks/08_validation_report.py` → `reports/informe_validacion.md`
+- El informe **se genera desde los CSV de `reports/`**: si cambian datos o modelo, se regenera sin copiar cifras a mano.
+- **Umbrales** (convención de industria para PD de consumo; están en el script y en el informe):
+  Gini ≥ 0,40 / 0,25–0,40 / < 0,25 · KS ≥ 0,30 / 0,20–0,30 / < 0,20 · caída de Gini < 10% / 10–20% / > 20% ·
+  PSI/CSI < 0,10 / 0,10–0,25 / > 0,25 · brecha relativa de calibración < 10% / 10–20% / > 20% ·
+  bandas con subestimación 0 / 1–2 / ≥ 3 · Gini vs. grado LC ≥ 0 / hasta −5 / < −5 pts.
+  Hosmer-Lemeshow y PSI aprobados vs. rechazados: **informativos** (no semáforo; razones en D11 y D10).
+- **Resultado:** 4 🟢 · 5 🟡 · 2 🔴. Rojos: CSI 2018 (`revol_util`) y bandas subestimadas del modelo **original**
+  (la versión recalibrada pasa a 1 banda 🟡).
+- **Conclusión del informe:** aprobado con condiciones — usar la versión recalibrada con MoC, dentro del dominio
+  FICO ≥ 660 / DTI ≤ 35 (corregido en D16), con monitoreo anual de calibración y trimestral de estabilidad.
+- Los umbrales de Gini/KS varían entre instituciones; un Gini de 0,325 es razonable para consumo no garantizado
+  sobre población ya filtrada, pero se marca 🟡 por consistencia con el umbral elegido.
+
+## D16. Condiciones del informe implementadas — `src/credit_risk/model.py`, `src/credit_risk/monitoring.py`
+- **Modelo oficial** `models/pd_model_final.pkl` (clase `PDModel`, generado por `06_recalibration.py`):
+  scorecard + ajuste de intercepto **+0,184** (recalibración a 2014 + MoC por tendencia) + dominio.
+- **Dominio = rangos vistos en train 2013:** FICO ≥ 660 y **DTI ≤ 34,99**. Corrige el "DTI ≤ 39" de D10, que salía
+  del p99,5 de *todos* los aprobados 2013–15: en 2013 el tope de LC era 35, así que el modelo nunca vio DTI > 35.
+  Fuera de dominio `predict_pd` y `score` devuelven NaN (no extrapola).
+- **Hallazgo:** LC subió el tope de DTI a 40 en 2014. En OOT 2015 el **3,4%** de los préstamos está fuera de dominio
+  y su default es **22,6%** (vs. 14,6% dentro). Dentro de dominio el modelo oficial estima **14,9% vs. 14,6%**
+  observado y **0 de 10 bandas** subestiman. Parte de la descalibración de D9/D11 venía de esos casos.
+  (El dominio se definió solo con train; OOT se usó para medir, no para elegir el corte.)
+- **Monitoreo** (`notebooks/09_monitoring.py` → `reports/monitoring.csv`): por cohorte, PSI del score, CSI máximo,
+  % fuera de dominio y, si hay resultado, calibración y bandas. Resultado: PSI verde hasta 2018; CSI de `revol_util`
+  ámbar en 2016–17 y rojo en 2018; fuera de dominio sube de 3,4% (2015) a 6,4% (2018).
+- **Disparadores de reentrenamiento propuestos:** PSI del score > 0,10, CSI > 0,25 en una variable con peso alto, o
+  fuera de dominio > 5% → 2018 ya dispara por CSI y por dominio.

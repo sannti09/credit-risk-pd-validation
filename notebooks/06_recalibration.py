@@ -49,3 +49,11 @@ res.round(4).to_csv("reports/recalibration_oot.csv")
 pd.set_option("display.width", 140)
 print(res.round(4).to_string())
 print("\nDefault observado por año:", {s: round(100 * x.target.mean(), 1) for s, x in d.items()})
+
+# ---- Modelo oficial (D16): recalibración + MoC + dominio = rangos vistos en train ----
+from credit_risk.model import PDModel
+
+domain = {"fico_low": (float(d["train"].fico_low.min()), None), "dti": (None, float(d["train"].dti.max()))}
+final = PDModel(b, m, cols, delta=float(delta_moc), domain=domain, version="1.0 (MoC tendencia train->valid)")
+pickle.dump(final, open("models/pd_model_final.pkl", "wb"))
+print(f"\nModelo oficial guardado: delta = {delta_moc:+.3f}, dominio = {domain}")
