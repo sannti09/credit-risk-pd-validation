@@ -1,0 +1,8 @@
+,ecl_musd,var_vs_base_pct,pct_saldo_etapa2
+"multiplicador etapa 2 = 1,5",260.32,-3.52,8.94
+multiplicador etapa 2 = 3,291.42,8.01,8.94
+Late 31-120 en etapa 2 (no 3),185.94,-31.09,11.19
+umbral SICR caída FICO = 30,290.02,7.49,16.8
+umbral SICR caída FICO = 70,260.15,-3.58,4.99
+LGD = 80%,238.81,-11.49,8.94
+"LGD = 45% (Basilea, no aplica)",134.33,-50.21,8.94
