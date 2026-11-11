@@ -31,6 +31,13 @@ Click the image to open the interactive dashboard (tooltips on every chart) on T
   <img src="docs/img/tableau/dashboard.png" alt="Tableau dashboard: IFRS 9 coverage 5.1%, expected credit loss US$ 238.1 M and live portfolio US$ 4,637.8 M; cumulative default by vintage rising from 12.5% (2013) to 15.4% (2016); CSI heatmap showing drift concentrated in 2017-2018; calibration by risk band where the recalibrated model tracks observed defaults." width="720">
 </a>
 
+## IFRS 9 at a glance
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/ifrs9_overview_dark.png">
+  <img src="docs/img/ifrs9_overview.png" alt="Three IFRS 9 charts. Bridge from the SFC provision (US$ 221.1 M) to the IFRS 9 base ECL (US$ 223.6 M): +43.4 LGD, +11.1 PD, +25.7 stage 2 lifetime, -65.4 amortization, -12.4 discounting. Stage 3 is 1% of the balance but 19% of expected loss. Sensitivities range from -16.5% to +21.1%, driven most by the staging rule for 31-120 days past due." width="720">
+</picture>
+
 ## Key results
 
 | Area | Result |

@@ -71,5 +71,5 @@ steps = pd.DataFrame({"paso": ["SFC Matriz A", "PDI 75% -> LGD observada", "PI m
                       "efecto_musd": [e0, e1 - e0, e2 - e1, e3 - e2, e4 - e3, e5 - e4, e5]})
 assert abs(e5 - ecl["base"] * 1e6) < 1e3, "el puente no termina en la ECL base reportada"
 steps["efecto_musd"] /= 1e6
-steps.round(2).to_csv("reports/sfc_vs_ifrs9_bridge.csv", index=False)
+steps.round(3).to_csv("reports/sfc_vs_ifrs9_bridge.csv", index=False)
 print("\nPUENTE SFC (Matriz A) -> NIIF 9 base (US$ M)\n", steps.round(1).to_string(index=False))

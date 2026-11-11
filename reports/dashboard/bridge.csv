@@ -1,8 +1,8 @@
 order,step,kind,start,effect,bar_base,bar_length
-1,SFC provision (Matrix A),Start,0.0,221.15,0.0,221.15
-2,LGD: 75% regulatory -> 90.7% observed,Increase,221.15,43.44,221.15,43.44
-3,PD: SFC matrix -> model 12m PD,Increase,264.59,11.12,264.59,11.12
-4,Stage 2: lifetime horizon,Increase,275.71,25.7,275.71,25.7
-5,Balance amortization,Decrease,301.41,-65.37,236.04,65.37
-6,Discounting at effective rate,Decrease,236.04,-12.42,223.62,12.42
-7,IFRS 9 ECL (base),Total,0.0,223.62,0.0,223.62
+1,SFC provision (Matrix A),Start,0.0,221.149,0.0,221.149
+2,LGD: 75% regulatory -> 90.7% observed,Increase,221.149,43.44,221.149,43.44
+3,PD: SFC matrix -> model 12m PD,Increase,264.589,11.117,264.589,11.117
+4,Stage 2: lifetime horizon,Increase,275.706,25.7,275.706,25.7
+5,Balance amortization,Decrease,301.406,-65.365,236.041,65.365
+6,Discounting at effective rate,Decrease,236.041,-12.419,223.622,12.419
+7,IFRS 9 ECL (base),Total,0.0,223.622,0.0,223.622

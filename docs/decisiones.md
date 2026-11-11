@@ -638,3 +638,9 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
 - **Español:** este registro completo de decisiones y la versión en español del informe. La regla se declara en el README.
 - Los nombres internos en español del código (p. ej. `saldo`, `etapa`) se mantienen: renombrarlos tendría más riesgo
   que beneficio. Los proyectos nuevos se escriben en inglés desde el inicio.
+
+## D35. Gráficos NIIF 9 en Python (no en Tableau) — `notebooks/17_ifrs9_charts.py`
+- Tableau se limita a un dashboard (cosechas, estabilidad, calibración y 3 KPIs): basta para demostrar la herramienta.
+- El puente SFC → NIIF 9, el reparto por etapa y las sensibilidades se grafican en Python (versión clara y oscura):
+  se regeneran con el pipeline y quedan versionados. Usan `bridge.csv`, `stage_mix.csv` y `sensitivity.csv`.
+- El puente se guarda con 3 decimales para que el redondeo coincida con el README (221,1, no 221,2).
