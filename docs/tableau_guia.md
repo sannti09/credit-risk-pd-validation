@@ -145,3 +145,34 @@ Tres "tarjetas" grandes. Para cada una: hoja nueva, tipo de marca *Text*, una so
 - [ ] Colores consistentes entre hojas (p. ej., "modelo oficial" siempre del mismo color).
 - [ ] Una línea de fuente y fecha de corte en cada tablero.
 - [ ] Nada de datos a nivel de préstamo (todo viene de `reports/dashboard/`, que es agregado).
+
+---
+
+## Hojas 3–5 — versión actualizada (D32; reemplaza las hojas 3, 4 y 5 de arriba)
+Archivos nuevos, ya en inglés: `stability_csi.csv`, `model_performance.csv`, `kpis.csv`.
+
+### Hoja 3 — Stability: mapa de calor (`stability_csi.csv`)
+1. Data → New Data Source → `stability_csi.csv`. Hoja nueva → pestaña **Stability**.
+2. **year** a Columns (Discrete), **variable** a Rows, **csi** a **Color** (Marks: *Square*).
+3. Colores: Color → Edit Colors → *Stepped Color*, 3 pasos, rango 0–0.25+ (verde → ámbar → rojo); o arrastra
+   **status** a Color y asigna verde/ámbar/rojo a mano (más claro para el lector).
+4. **csi** a **Label** (formato número, 2 decimales). Ordena **variable** por csi de 2018 descendente.
+5. Título: **Population drift is concentrated in 2017–2018** / gris: *CSI by variable vs. the 2013 development
+   sample. Revolving utilization and card usage cross the red threshold (0.25) in 2018 → retraining trigger.*
+
+### Hoja 4 — Model performance: barras horizontales (`model_performance.csv`)
+1. Data → New Data Source → `model_performance.csv`. Hoja nueva → pestaña **Performance**.
+2. **sample** a Filters → deja solo **Out-of-time 2015**. **model** a Rows, **gini** a Columns (barras).
+3. Color: Scorecard = azul (el oficial), Gradient boosting = gris medio, Lending Club grade = gris claro.
+4. **gini** a Label (3 decimales). Línea de referencia opcional: ninguna (no hay umbral universal).
+5. Título: **Out-of-sample Gini: own models vs. Lending Club's grade** / gris: *The scorecard (0.325) uses only
+   application and bureau data; LC's grade (0.357) used proprietary information. Recalibration does not change Gini.*
+
+### Hoja 5 — Key figures: tarjetas (`kpis.csv`)
+Una hoja por cifra (3 tarjetas: ECL, cobertura, saldo).
+1. Data → New Data Source → `kpis.csv`. Hoja nueva → pestaña **KPI ECL**.
+2. **kpi** a Filters → solo "Expected credit loss (IFRS 9, weighted)". Marks: *Text*. **value** a Text.
+3. Clic en Text → edita: `US$ <SUM(value)> M` en tamaño 28 negrita; debajo `Expected credit loss (IFRS 9)` en 11 gris.
+4. Duplica la hoja (clic derecho en la pestaña → *Duplicate*) y cambia el filtro: "Coverage (ECL / balance)"
+   → `<SUM(value)>%`; "Live portfolio balance" → `US$ <SUM(value)> M`.
+5. Sin título de hoja (clic derecho en el título → *Hide Title*): el texto ya lo dice.

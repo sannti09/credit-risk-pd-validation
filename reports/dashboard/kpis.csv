@@ -1,0 +1,7 @@
+kpi,value,unit
+"Expected credit loss (IFRS 9, weighted)",238.1,US$ M
+Coverage (ECL / balance),5.1,%
+Live portfolio balance,4637.8,US$ M
+Live loans,582796.0,loans
+Observed LGD,90.7,%
+SFC reference model (Matrix A),221.1,US$ M
