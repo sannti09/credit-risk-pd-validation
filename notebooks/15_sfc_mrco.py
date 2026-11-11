@@ -1,6 +1,6 @@
 """Provisión según el Modelo de Referencia de Consumo de la SFC (MRCO) vs. ECL NIIF 9 (D25).
 
-Fuentes (docs/referencias/):
+Fuentes (documentos de la SFC, citados con enlace en docs/decisiones.md D25):
 - Matrices A y B de PI y fórmula: CE 047 de 2016, Anexo 5 del Cap. II CBCF (verificado en el texto).
 - Factor K (CE 026 de 2022): solo créditos originados desde 2023 -> no aplica a esta cartera (2015-2018).
 - Incumplimiento consumo: mora > 90 días (cap02riesgocrediticio.doc).
