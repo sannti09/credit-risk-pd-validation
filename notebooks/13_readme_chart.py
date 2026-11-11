@@ -47,4 +47,5 @@ for suffix, th in THEMES.items():
     fig.tight_layout()
     fig.savefig(f"docs/img/calibration_oot{suffix}.png", facecolor=th["bg"])
     plt.close(fig)
+g.round(4).to_csv("reports/calibration_bands_oot.csv")
 print(g.round(1).to_string())

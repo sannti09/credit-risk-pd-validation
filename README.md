@@ -35,7 +35,7 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 | IFRS 9 portfolio (Mar 2019) | 582,796 loans · US$ 4,638 M · stages 88.8% / 10.2% / 1.0% of balance |
 | Observed LGD | **90.7%** (discounted recoveries of charged-off loans) |
 | Expected credit loss | **US$ 238.1 M (5.1% coverage)**, probability-weighted across 3 scenarios |
-| Colombian regulator benchmark (SFC MRCO) | Matrix A: US$ 221.1 M (4.8%) · Matrix B (stress): US$ 335.0 M (7.2%) |
+| Colombian regulator benchmark (SFC MRCO) | Matrix A: US$ 221.1 M (4.8%) · Matrix B (adds the countercyclical component): US$ 335.0 M (7.2%) |
 
 ## Things a validator would ask about
 
@@ -48,7 +48,7 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 - **Train / validation / out-of-time split** (2013 / 2014 / 2015) so the final test does not drive modeling decisions;
   remaining process limitations are disclosed.
 - **Selection bias.** The model only sees approved loans. Approved vs. rejected applicants were compared (PSI) and
-  the model is restricted to its **domain** (FICO ≥ 660, DTI ≤ 35): Lending Club raised its DTI cap in 2014 and those
+  the model is restricted to its **domain** (FICO ≥ 660, DTI ≤ 34.99, the range seen in development): Lending Club raised its DTI cap in 2014 and those
   loans default at 22.6%.
 - **IFRS 9 staging.** Lending Club reports "Late (31–120 days)" as one bucket; days past due were estimated from the
   last payment date to apply the 90-day default presumption correctly.
@@ -64,7 +64,7 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 | 5. SFC benchmark | Provision under Colombia's consumer reference model (MRCO, matrices A/B) vs. IFRS 9 ECL | `notebooks/15`, `docs/referencias/` |
 
 - **Validation report:** [`reports/informe_validacion.md`](reports/informe_validacion.md) (generated from results, in Spanish)
-- **Decision log:** [`docs/decisiones.md`](docs/decisiones.md) — every modeling decision with its rationale (D1–D21, in Spanish)
+- **Decision log:** [`docs/decisiones.md`](docs/decisiones.md) — every modeling decision with its rationale (in Spanish)
 
 ## Scoring API
 
@@ -79,7 +79,7 @@ curl -X POST localhost:8000/score -H "Content-Type: application/json" \
 ```
 
 Response: PD, score, whether the applicant is inside the model's domain, and the top-3 **reason codes**
-(variables that cost the most points). Out-of-domain applicants (FICO < 660 or DTI > 35) get no PD.
+(variables that cost the most points). Out-of-domain applicants (FICO < 660 or DTI > 34.99) get no PD.
 
 ## Reproduce
 
@@ -112,5 +112,5 @@ modelo de PD (scorecard logístico con WoE y challenger de gradient boosting), *
 semáforos (discriminación, calibración, estabilidad, representatividad y sobreajuste) y **pérdida esperada NIIF 9**
 sobre una cartera viva de US$ 4.638 M (etapas, PD 12 meses y de vida, LGD observada de 90,7%, escenarios
 ponderados). Resultado: ECL de US$ 238,1 M (5,1% del saldo), comparada con la provisión del modelo de referencia
-de consumo de la SFC (MRCO): US$ 221,1 M con la Matriz A y US$ 335,0 M con la Matriz B. El informe de validación y el registro de las 21
+de consumo de la SFC (MRCO): US$ 221,1 M con la Matriz A y US$ 335,0 M con la Matriz B. El informe de validación y el registro de todas las
 decisiones de modelado están en español en `reports/` y `docs/`.

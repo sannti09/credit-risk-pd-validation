@@ -5,7 +5,7 @@
 ## 1. Alcance
 - **Modelo:** scorecard logístico sobre WoE, 13 variables de solicitud y buró; escala 600 = 50:1, PDO 20.
 - **Uso previsto:** PD de originación (vida del préstamo a 36 meses) para solicitantes que cumplen la política de
-  Lending Club (**FICO ≥ 660, DTI ≤ 35**, rangos vistos en desarrollo). Fuera de ese dominio el modelo no entrega PD (D16).
+  Lending Club (**FICO ≥ 660, DTI ≤ 34,99**, rangos vistos en desarrollo). Fuera de ese dominio el modelo no entrega PD (D16).
 - **Muestras:** desarrollo 2013 · validación 2014 · *out-of-time* (OOT) 2015 · estabilidad 2016–2018 (sin resultado).
 - **Fuera de alcance:** préstamos a 60 meses, PD a 12 meses / NIIF 9 (fase siguiente).
 
@@ -49,7 +49,7 @@ Umbrales: verde / ámbar / rojo. 6 🟢 · 5 🟡 · 2 🔴
 ## 5. Conclusión
 **Aprobado con condiciones — condiciones implementadas** (`src/credit_risk/model.py`, `models/pd_model_final.pkl`):
 1. La PD sale siempre recalibrada con MoC (ajuste de intercepto +0.184).
-2. Fuera del dominio (FICO ≥ 660, DTI ≤ 35) el modelo no entrega PD.
+2. Fuera del dominio (FICO ≥ 660, DTI ≤ 34,99) el modelo no entrega PD.
 3. Monitoreo por cohorte en `notebooks/09_monitoring.py` (PSI, CSI, % fuera de dominio, calibración).
 
 Pendiente de seguimiento: CSI de `revol_util` en rojo en 2018 y el aumento de solicitudes fuera de dominio

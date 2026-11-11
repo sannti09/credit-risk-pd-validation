@@ -314,6 +314,8 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
 | 2 | mora 16–30 días | 2.521 | 20,4 | 0,4% |
 | 3 | mora > 30 días | 12.481 | 104,4 | 2,3% |
 
+> ⚠️ Cifras de etapas **reemplazadas por D21** (etapa 3 desde 90 días: 496.629 / 80.761 / 5.406 préstamos).
+
 - **Fuera de dominio del modelo PD:** 4,8% de la cartera (DTI > 35). NIIF 9 exige ECL para todos → necesitarán una PD
   por segmento (siguiente paso).
 - "FICO actual < 600" no agrega casos: todos ya caen por la caída de ≥ 50 puntos.
@@ -473,7 +475,8 @@ mora > 90 días (texto del Cap. II); vigencia → CE 004 de 2026: la nueva Circu
 **Verificación de supuestos (búsqueda, nov-2026):**
 - **PDI sin garantía 75% → 85% → 100%: POR VERIFICAR.** La CE 032 de 2015 confirma que la PDI de deudores en
   incumplimiento sube gradualmente con los días transcurridos, pero no se encontraron los valores en fuente oficial.
-- **Matriz A vs. B: CONFIRMADO (fuentes secundarias confiables: Banco de la República, Asobancaria, CE 017 de 2023).**
+- **Matriz A vs. B: FUENTE SECUNDARIA, consistente entre fuentes** (Banco de la República, Asobancaria; la CE 017 de
+  2023 se cita en ellas pero no está en `docs/referencias/`).
   Componente individual procíclico (CIP) con Matriz A; contracíclico (CIC) en fase de acumulación =
   máx(CIC anterior, PE Matriz B − PE Matriz A) → la provisión individual total ≈ PE con Matriz B en acumulación;
   en desacumulación se usa la Matriz A. (Hubo medidas transitorias en 2024–25; vigencia actual por confirmar.)
@@ -511,13 +514,14 @@ mora > 90 días → Incumplimiento.
 | PDI 75% → LGD observada 90,7% | +43,4 |
 | PI de la matriz → PD 12m del modelo | +11,1 |
 | Etapa 2 a vida restante (NIIF 9) | +25,7 |
-| Saldo amortizado + descuento a tasa efectiva | **−77,8** |
+| Saldo amortizado mes a mes (sin descuento) | **−65,4** |
+| Descuento a la tasa efectiva | **−12,4** |
 | **NIIF 9 base** | **223,6** |
 
 **Lectura (corregida con el puente):**
 - La coincidencia Matriz A ≈ NIIF 9 es **compensación de efectos**: NIIF 9 suma por la mayor severidad (+43),
-  la PD del modelo (+11) y la vida restante en etapa 2 (+26), pero resta **78** porque proyecta el saldo que se
-  amortiza (préstamos a 36 meses pagan capital rápido) y descuenta las pérdidas; la regla SFC aplica la PI al saldo
+  la PD del modelo (+11) y la vida restante en etapa 2 (+26), pero resta **65** porque proyecta el saldo que se
+  amortiza (préstamos a 36 meses pagan capital rápido) y **12** por descontar las pérdidas; la regla SFC aplica la PI al saldo
   actual completo, sin descuento. *(La explicación inicial atribuía la compensación a la PD; el puente mostró que la
   PD sube la pérdida y que el factor que más resta es la amortización/descuento.)*
 - La **Matriz B** (base del componente contracíclico en acumulación) da +41% sobre la ECL ponderada: la regla local
@@ -526,3 +530,29 @@ mora > 90 días → Incumplimiento.
   la SFC subestimaría la severidad.
 **Limitaciones:** calificación aproximada (no es el puntaje real del MRCO); PDI sin verificar; cartera de EE. UU.
 evaluada con parámetros calibrados para Colombia → ejercicio de comparación metodológica, no una provisión real.
+
+## D26. Datos del tablero (Tableau Public) — `sql/08_dashboard.sql`, `notebooks/16_dashboard_data.py`
+- Herramienta: **Tableau Public** (Power BI Desktop no corre en macOS; Tableau Public es gratis y publica con enlace).
+- `reports/dashboard/`: **solo agregados** (sin préstamos individuales) → se puede versionar y publicar.
+- **Curvas de cosecha** en SQL con funciones de ventana (`SUM() OVER (PARTITION BY cosecha ORDER BY mes)`), por
+  trimestre de originación, solo con meses ya observados al corte (sin extrapolar cosechas inmaduras).
+  Default acumulado a 36 meses: 2013-Q1 12,5% · 2014-Q1 12,7% · 2015-Q1 14,7% · 2016-Q1 15,4% → confirma la tendencia
+  creciente que motivó la recalibración (D11).
+- Además: originación por año y grado, cartera NIIF 9 por año y etapa, calibración por banda, monitoreo, ECL por
+  etapa/escenario/sensibilidad, comparación SFC y desempeño de modelos.
+
+## D27. Correcciones de la revisión independiente (API, CI, SFC, README)
+1. **Puente SFC → NIIF 9:** el último paso era un residuo. Ahora se separa con una ECL sin descuento
+   (`ecl(discount=False)`): amortización −65,4 y descuento −12,4; el script verifica que termina en la ECL base.
+2. **API:** `home_ownership` y `purpose` aceptan solo valores de Lending Club (otro valor → 422; antes "rent" en
+   minúscula se puntuaba en silencio como OTHER); motivos de rechazo con `missing: true` cuando el dato no se envió.
+3. **Límite de DTI:** textos alineados al valor real del modelo (≤ 34,99; DTI = 35 queda fuera de dominio).
+4. **Paridad en CI:** `tests/test_parity.py` compara el puntuador JSON con 300 solicitantes **sintéticos** cuya PD
+   esperada genera el modelo oficial (`tests/fixtures/parity_cases.json`); antes la paridad solo vivía en un notebook.
+5. **Fuentes:** la regla Matriz A/B se reetiqueta como fuente secundaria; "Matrix B (stress)" → "adds the
+   countercyclical component"; cifras viejas de D17 marcadas como reemplazadas; README sin conteos fijos de decisiones.
+6. **Docker:** se fijan también pydantic y starlette. PDI de 84 préstamos sin fecha de pago documentada (100%,
+   conservador, ≈ US$ 0,3 M). Guarda contra índice negativo en el puntuador.
+- **Nota sobre la revisión:** el revisor marcó como no verificada la vigencia de la CE 004/2026 porque el PDF es un
+  escaneo; sí se leyó como imagen (instrucción SEXTA: rige desde el 1-jun-2026). Sigue pendiente confirmar que las
+  matrices de 2016 continúan en el texto depurado de la nueva CBF.

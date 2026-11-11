@@ -30,10 +30,10 @@ args = dict(p_life=p_life, mob=mob_eff, balance=port.saldo.to_numpy(),
             annual_rate=port.int_rate.to_numpy(), n_left=n_left, f=f)
 
 
-def run(stage=None, lgd=LGD, stage2_mult=STAGE2_MULT, pd_mult=1.0, p=None):
+def run(stage=None, lgd=LGD, stage2_mult=STAGE2_MULT, pd_mult=1.0, p=None, discount=True):
     st = assign_stage(port) if stage is None else stage
     a = args if p is None else {**args, "p_life": p}
-    return ecl(st, lgd=lgd, stage2_mult=stage2_mult, pd_mult=pd_mult, **a)
+    return ecl(st, lgd=lgd, stage2_mult=stage2_mult, pd_mult=pd_mult, discount=discount, **a)
 
 
 def by_stage(r):
@@ -47,6 +47,10 @@ def by_stage(r):
 base = run()
 tab = by_stage(base)
 tab.round(3).to_csv("reports/ifrs9_ecl_by_stage.csv")
+# Componentes para el puente con la SFC (D25): ECL base sin descuento (aísla amortización vs. descuento)
+pd.DataFrame({"componente": ["ecl_base", "ecl_base_sin_descuento"],
+              "musd": [base.ecl.sum() / 1e6, run(discount=False).ecl.sum() / 1e6]}).round(4).to_csv(
+    "reports/ifrs9_ecl_components.csv", index=False)
 
 # Escenarios ponderados
 sc = {}

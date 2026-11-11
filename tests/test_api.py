@@ -29,3 +29,11 @@ def test_out_of_domain_and_validation():
     assert r["in_domain"] is False and r["pd"] is None and r["reasons"] == []
     assert client.post("/score", json={**EXAMPLE, "fico_low": 1000}).status_code == 422
     assert client.post("/score", json={"fico_low": 700, "dti": 10}).json()["in_domain"]  # resto faltante
+
+
+def test_categorical_values_are_validated_and_missing_is_flagged():
+    assert client.post("/score", json={**EXAMPLE, "home_ownership": "rent"}).status_code == 422
+    r = client.post("/score", json={"fico_low": 700, "dti": 10}).json()
+    assert any(x["missing"] for x in r["reasons"])
+    assert client.post("/score", json={**EXAMPLE, "dti": 34.99}).json()["in_domain"]
+    assert not client.post("/score", json={**EXAMPLE, "dti": 35.0}).json()["in_domain"]

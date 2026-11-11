@@ -6,6 +6,7 @@ import pickle
 import sys
 
 import duckdb
+import pandas as pd
 import numpy as np
 
 sys.path.insert(0, "api")
@@ -49,3 +50,29 @@ same_nan = np.array_equal(np.isnan(p_json), np.isnan(p_model))
 diff = np.nanmax(np.abs(p_json - p_model))
 print(f"Paridad en {len(df)} préstamos: dominio idéntico = {same_nan}, máx |ΔPD| = {diff:.2e}")
 assert same_nan and diff < 1e-9
+
+# Casos de paridad para CI (D27): solicitantes SINTÉTICOS (no datos reales) + PD esperada del modelo oficial.
+rng = np.random.default_rng(2026)
+n = 300
+train = duckdb.connect("data/credit.duckdb", read_only=True).sql(
+    "select * from model_sample where split='train'").df()
+synth = {}
+for f in dict.fromkeys(list(b.tables_) + cols):  # el binner necesita todas sus variables, aunque el modelo use 13
+    s = train[f]
+    if f in b.edges_ or f in model.domain:
+        lo, hi = np.nanquantile(s, [0.001, 0.999])
+        v = rng.uniform(lo, hi, n)
+        v = np.where(rng.random(n) < 0.05, np.nan, v) if f not in model.domain else v
+        synth[f] = np.round(v, 2)
+    else:
+        known = spec["variables"][f]["woe"] if f in spec["variables"] else b.categories_[f]
+        cats = list(known) + ["OTHER", None]
+        synth[f] = rng.choice(np.array(cats, dtype=object), n)
+syn = pd.DataFrame(synth)
+syn["dti"] = np.where(rng.random(n) < 0.1, 38.0, syn["dti"])  # algunos fuera de dominio
+expected = model.predict_pd(syn)
+cases = [{"input": {k: (None if (v is None or (isinstance(v, float) and np.isnan(v))) else v)
+                    for k, v in r.items() if k in cols},
+          "pd": None if np.isnan(p) else float(p)} for r, p in zip(syn.to_dict("records"), expected)]
+open("tests/fixtures/parity_cases.json", "w").write(json.dumps(cases))
+print(f"Casos de paridad sintéticos: {len(cases)} ({sum(c['pd'] is None for c in cases)} fuera de dominio)")

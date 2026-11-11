@@ -25,7 +25,7 @@ class Scorecard:
         elif v["type"] == "numeric":
             edges = [-math.inf if e is None and i == 0 else math.inf if e is None else e
                      for i, e in enumerate(v["edges"])]
-            w = v["woe"][bisect_left(edges, float(value)) - 1]  # grupos (e_i, e_i+1]
+            w = v["woe"][max(bisect_left(edges, float(value)) - 1, 0)]  # grupos (e_i, e_i+1]
         else:
             w = v["woe"].get(str(value), v.get("woe_other"))
         return 0.0 if w is None else w  # grupo no visto en desarrollo -> neutral (como en desarrollo)
@@ -41,7 +41,7 @@ class Scorecard:
         contrib = {n: v["coef"] * self._woe(n, x.get(n)) for n, v in self.spec["variables"].items()}
         logit = self.spec["intercept"] + self.spec["delta"] + sum(contrib.values())
         lost = {n: self.factor * (c - self.spec["variables"][n]["best_contrib"]) for n, c in contrib.items()}
-        reasons = [{"variable": n, "points_lost": round(p, 1)}
+        reasons = [{"variable": n, "points_lost": round(p, 1), "missing": x.get(n) is None}
                    for n, p in sorted(lost.items(), key=lambda kv: -kv[1])[:n_reasons] if p > 0.5]
         ok = self.in_domain(x)
         return {"in_domain": ok,

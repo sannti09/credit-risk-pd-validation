@@ -59,12 +59,14 @@ def amortization(balance: np.ndarray, annual_rate: np.ndarray, n_left: np.ndarra
 
 def ecl(stage: np.ndarray, p_life: np.ndarray, mob: np.ndarray, balance: np.ndarray, annual_rate: np.ndarray,
         n_left: np.ndarray, f: np.ndarray, lgd: float, stage2_mult: float = 2.0, pd_mult: float = 1.0,
-        horizon: int = 36) -> pd.DataFrame:
-    """ECL por préstamo. pd_mult = multiplicador de escenario macro (1 = base)."""
+        horizon: int = 36, discount: bool = True) -> pd.DataFrame:
+    """ECL por préstamo. pd_mult = multiplicador de escenario macro (1 = base). discount=False solo para análisis."""
     p = np.minimum(p_life * pd_mult * np.where(stage == 2, stage2_mult, 1.0), 0.99)
     mpd = marginal_pd(p, mob, f, horizon)
     ead = amortization(balance, annual_rate, n_left, horizon)
     df = (1 + annual_rate / 1200)[:, None] ** -(np.arange(horizon)[None, :] + 1)
+    if not discount:
+        df = np.ones_like(df)
     h = np.where(stage == 1, 12, horizon)
     mask = np.arange(horizon)[None, :] < h[:, None]
     loss = (mpd * lgd * ead * df * mask).sum(axis=1)

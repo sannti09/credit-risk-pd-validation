@@ -26,7 +26,9 @@ pa = np.array([MATRIZ_A[r] for r in RATINGS])
 cuts = (pa[:-1] + pa[1:]) / 2  # puntos medios entre niveles consecutivos
 d["calificacion"] = np.where(d.etapa == 3, "Incumplimiento",
                              np.array(RATINGS)[np.searchsorted(cuts, d.pd_12m.to_numpy())])
-# PDI: 75% antes del incumplimiento; en incumplimiento sube con los días (mora - 90)
+# PDI: 75% antes del incumplimiento; en incumplimiento sube con los días (mora - 90).
+# Sin fecha de último pago (84 préstamos en etapa 3, US$ 1,1 M): se asume >= 90 días en incumplimiento -> PDI 100%
+# (conservador; impacto ≈ US$ 0,3 M en la Matriz A).
 dias_incump = np.clip((d.meses_sin_pago.fillna(6) - 3) * 30, 0, None)
 d["pdi"] = np.where(d.etapa == 3, np.select([dias_incump >= 90, dias_incump >= 30], [1.0, 0.85], 0.75), 0.75)
 for m, mat in (("A", MATRIZ_A), ("B", MATRIZ_B)):
@@ -60,10 +62,14 @@ e0 = d.pe_A.sum()
 e1 = (d.pi_A * LGD * d.saldo).sum()                              # 1) PDI regulatoria -> LGD observada
 e2 = (np.where(d.etapa == 3, 1.0, d.pd_12m) * LGD * d.saldo).sum()  # 2) PI de la matriz -> PD 12m del modelo
 e3 = (d.pd_aplicable * LGD * d.saldo).sum()                      # 3) etapa 2 a vida restante (NIIF 9)
-e4 = ecl["base"] * 1e6                                           # 4) EAD amortizada + descuento a tasa efectiva
+comp = pd.read_csv("reports/ifrs9_ecl_components.csv").set_index("componente").musd * 1e6
+e4 = comp["ecl_base_sin_descuento"]                              # 4) saldo amortizado mes a mes (sin descuento)
+e5 = comp["ecl_base"]                                            # 5) descuento a la tasa efectiva
 steps = pd.DataFrame({"paso": ["SFC Matriz A", "PDI 75% -> LGD observada", "PI matriz -> PD 12m del modelo",
-                               "Etapa 2 a vida restante", "Amortización del saldo y descuento", "NIIF 9 base"],
-                      "efecto_musd": [e0, e1 - e0, e2 - e1, e3 - e2, e4 - e3, e4]})
+                               "Etapa 2 a vida restante", "Amortización del saldo", "Descuento a tasa efectiva",
+                               "NIIF 9 base"],
+                      "efecto_musd": [e0, e1 - e0, e2 - e1, e3 - e2, e4 - e3, e5 - e4, e5]})
+assert abs(e5 - ecl["base"] * 1e6) < 1e3, "el puente no termina en la ECL base reportada"
 steps["efecto_musd"] /= 1e6
 steps.round(2).to_csv("reports/sfc_vs_ifrs9_bridge.csv", index=False)
 print("\nPUENTE SFC (Matriz A) -> NIIF 9 base (US$ M)\n", steps.round(1).to_string(index=False))
