@@ -77,7 +77,11 @@ br["kind"] = ["Start"] + ["Increase" if v >= 0 else "Decrease" for v in br.efect
 run = br.efecto_musd.iloc[:-1].cumsum()
 br["start"] = [0.0] + list(run.iloc[:-1]) + [0.0]          # base de cada barra
 br["effect"] = list(br.efecto_musd.iloc[:-1]) + [br.efecto_musd.iloc[-1]]
-br[["order", "step", "kind", "start", "effect"]].round(2).to_csv(OUT / "bridge.csv", index=False)
+# Barras Gantt sin tamaños negativos (más robusto en Tableau): base = mínimo del tramo, largo = |efecto|
+br["bar_base"] = [min(a, a + e) for a, e in zip(br.start, br.effect)]
+br["bar_length"] = br.effect.abs()
+br[["order", "step", "kind", "start", "effect", "bar_base", "bar_length"]].round(2).to_csv(OUT / "bridge.csv",
+                                                                                        index=False)
 
 se = pd.read_csv("reports/ifrs9_sensitivity.csv", index_col=0)
 lab = {"multiplicador etapa 2 = 1,5": "Stage 2 PD multiplier 1.5 (base 2)",

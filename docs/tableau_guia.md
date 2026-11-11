@@ -156,7 +156,8 @@ Archivos nuevos, ya en inglés: `stability_csi.csv`, `model_performance.csv`, `k
 2. **year** a Columns (Discrete), **variable** a Rows, **csi** a **Color** (Marks: *Square*).
 3. Colores: Color → Edit Colors → *Stepped Color*, 3 pasos, rango 0–0.25+ (verde → ámbar → rojo); o arrastra
    **status** a Color y asigna verde/ámbar/rojo a mano (más claro para el lector).
-4. **csi** a **Label** (formato número, 2 decimales). Ordena **variable** por csi de 2018 descendente.
+4. **csi** a **Label** (formato número, 2 decimales). En Color va **status** o **csi**, no ambos. Orden: clic
+   derecho en variable → Sort → por **csi** (suma de todos los años; ordenar solo por 2018 requiere un cálculo extra).
 5. Título: **Population drift is concentrated in 2017–2018** / gris: *CSI by variable vs. the 2013 development
    sample. Revolving utilization and card usage cross the red threshold (0.25) in 2018 → retraining trigger.*
 
@@ -175,7 +176,7 @@ Una hoja por cifra (3 tarjetas: ECL, cobertura, saldo).
 3. Clic en Text → edita: `US$ <SUM(value)> M` en tamaño 28 negrita; debajo `Expected credit loss (IFRS 9)` en 11 gris.
 4. Duplica la hoja (clic derecho en la pestaña → *Duplicate*) y cambia el filtro: "Coverage (ECL / balance)"
    → `<SUM(value)>%`; "Live portfolio balance" → `US$ <SUM(value)> M`.
-5. Sin título de hoja (clic derecho en el título → *Hide Title*): el texto ya lo dice.
+5. Sin título de hoja: menú **Worksheet → Show Title** (desmárcalo). El texto ya lo dice.
 
 ## Hojas 6–8 — versión actualizada (D32; reemplaza las hojas 6, 7 y 8 de arriba)
 Archivos nuevos en inglés: `stage_mix.csv`, `bridge.csv`, `sensitivity.csv`.
@@ -188,7 +189,8 @@ Archivos nuevos en inglés: `stage_mix.csv`, `bridge.csv`, `sensitivity.csv`.
 
 ### Hoja 7 — SFC → IFRS 9 bridge: cascada (`bridge.csv`)
 1. **step** a Columns; ordénalo por **order** (clic derecho → Sort → Field: order, ascendente).
-2. Marks: **Gantt Bar**. **start** a Rows. **effect** a **Size**.
+2. Marks: **Gantt Bar**. **bar_base** a Rows. **bar_length** a **Size** (siempre positivo: la barra va de
+   bar_base hacia arriba; así no dependemos de tamaños negativos, D32).
 3. **kind** a Color: Start y Total azul oscuro, Increase rojo, Decrease verde.
 4. **effect** a Label (US$ M, 1 decimal). Rota los nombres del eje X si no caben (clic derecho → Rotate Label).
 5. Título: **Why the SFC provision and IFRS 9 ECL nearly coincide** / gris: *Offsetting effects: higher observed LGD
@@ -196,7 +198,9 @@ Archivos nuevos en inglés: `stage_mix.csv`, `bridge.csv`, `sensitivity.csv`.
 
 ### Hoja 8 — Sensitivities: barras divergentes (`sensitivity.csv`)
 1. **assumption** a Rows, **change_vs_base_pct** a Columns. Ordena por change_vs_base_pct (descendente).
-2. **direction** a Color: Raises ECL rojo, Lowers ECL verde. Línea de referencia en 0 (Analytics → Constant Line).
-3. **change_vs_base_pct** a Label (formato `+0.0"%";-0.0"%"`).
+2. **direction** a Color: Raises ECL rojo, Lowers ECL verde. Línea en 0: pestaña Analytics → arrastra
+   **Constant Line** (o *Reference Line* → Constant) al gráfico → valor 0.
+3. **change_vs_base_pct** a Label: clic derecho → Format → Numbers → **Custom**: `+0.0"%";-0.0"%";0.0"%"`
+   (tres secciones: positivo; negativo; cero).
 4. Título: **What moves the ECL: staging rules matter more than expert judgments** / gris: *Change vs. base ECL
    (US$ 223.6 M), one assumption at a time. Basel's 45% LGD excluded (not applicable to this portfolio).*
