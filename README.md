@@ -27,9 +27,16 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 
 Click an image to open the interactive version (filters and tooltips) on Tableau Public.
 
-<a href="https://public.tableau.com/app/profile/santiago.rueda4047/viz/CreditRiskPDIFRS9LendingClub/Vintage">
-  <img src="docs/img/tableau/vintage.png" alt="Cumulative default rate by months on book for each quarterly vintage: each new vintage defaults more, from 12.5% (2013) to 15.4% (2016) at 36 months." width="560">
-</a>
+<table>
+  <tr>
+    <td width="50%"><a href="https://public.tableau.com/app/profile/santiago.rueda4047/viz/CreditRiskPDIFRS9LendingClub/Vintage"><img src="docs/img/tableau/vintage.png" alt="Cumulative default rate by months on book per quarterly vintage: each new vintage defaults more, 12.5% (2013) to 15.4% (2016) at 36 months."></a></td>
+    <td width="50%"><a href="https://public.tableau.com/app/profile/santiago.rueda4047/viz/CreditRiskPDIFRS9LendingClub/Calibration"><img src="docs/img/tableau/calibration.png" alt="Default rate by risk band, out-of-time 2015: the original model under-predicts; the recalibrated model tracks observed defaults within 2 pp."></a></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://public.tableau.com/app/profile/santiago.rueda4047/viz/CreditRiskPDIFRS9LendingClub/Stability"><img src="docs/img/tableau/stability.png" alt="Characteristic stability index by variable and year: drift concentrates in 2017-2018; revolving utilization crosses the red threshold in 2018."></a></td>
+    <td width="50%"><a href="https://public.tableau.com/app/profile/santiago.rueda4047/viz/CreditRiskPDIFRS9LendingClub/Performance_"><img src="docs/img/tableau/performance.png" alt="Out-of-sample Gini: scorecard 0.325, regularized gradient boosting 0.340, Lending Club grade 0.357."></a></td>
+  </tr>
+</table>
 
 ## Key results
 
