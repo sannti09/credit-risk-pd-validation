@@ -23,5 +23,17 @@ aws iam detach-role-policy --role-name credit-risk-pd-lambda-role \
 aws iam delete-role --role-name credit-risk-pd-lambda-role 2>/dev/null || true
 printf 'DROP TABLE IF EXISTS credit_risk.loans;\nDROP DATABASE IF EXISTS credit_risk;\n' > /tmp/credit_drop.sql
 aws/athena_run.sh /tmp/credit_drop.sql
-aws s3 rb "s3://$BUCKET" --force
-echo "Recursos borrados."
+aws s3 rb "s3://$BUCKET" --force || true
+aws logs delete-log-group --log-group-name /aws/lambda/credit-risk-pd-score 2>/dev/null || true
+
+# Verificación: lista lo que haya quedado antes de declarar éxito (D31)
+left=()
+aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null && left+=("bucket $BUCKET")
+aws lambda get-function --function-name credit-risk-pd-score >/dev/null 2>&1 && left+=("Lambda credit-risk-pd-score")
+aws iam get-role --role-name credit-risk-pd-lambda-role >/dev/null 2>&1 && left+=("rol credit-risk-pd-lambda-role")
+[[ "$(aws apigateway get-rest-apis --query "items[?name=='credit-risk-pd-api'].id | [0]" --output text)" != "None" ]] && left+=("API credit-risk-pd-api")
+[[ "$(aws apigateway get-usage-plans --query "items[?name=='credit-risk-pd-api-plan'].id | [0]" --output text)" != "None" ]] && left+=("plan de uso")
+if (( ${#left[@]} )); then
+  echo "ATENCIÓN: quedaron recursos sin borrar: ${left[*]}" >&2; exit 1
+fi
+echo "Recursos borrados y verificados."

@@ -8,7 +8,7 @@ WITH base AS (
     FROM credit_risk.loans
     WHERE term_months = 36 AND issue_year BETWEEN 2013 AND 2018          -- poda de particiones
 ),
-tam AS (SELECT cosecha, count(*) AS prestamos, max(meses_observados) AS meses_obs FROM base GROUP BY 1),
+tam AS (SELECT cosecha, count(*) AS prestamos, min(meses_observados) AS meses_obs FROM base GROUP BY 1),
 defaults_mes AS (SELECT cosecha, mes_default AS mob, count(*) AS defaults
                  FROM base WHERE mes_default IS NOT NULL GROUP BY 1, 2),
 grilla AS (SELECT t.cosecha, m.mob, t.prestamos

@@ -37,7 +37,8 @@ def bands(n):  # bandas con subestimación significativa
 
 
 perf = pd.read_csv(R + "performance.csv")
-psi = pd.read_csv(R + "val_psi.csv").set_index("muestra")
+# PSI del MODELO OFICIAL (recalibrado, dentro de dominio), misma fuente que el tablero (D31)
+psi = pd.read_csv(R + "monitoring.csv", index_col=0).rename_axis("muestra")[["psi_score"]]
 csi = pd.read_csv(R + "val_csi.csv", index_col=0)
 cal = pd.read_csv(R + "val_calibration.csv").set_index("muestra")
 rec = pd.read_csv(R + "recalibration_oot.csv").set_index("metodo")

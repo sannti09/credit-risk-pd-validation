@@ -2,7 +2,9 @@
 
 -- 1) Curvas de cosecha (vintage): default acumulado por mes en libros, por trimestre de originación (36 meses).
 --    Default = Charged Off / Default / Late (31-120); mes de default ≈ último pago + 1.
---    Solo se muestran meses ya observados al corte (2019-03): sin extrapolar cosechas inmaduras.
+--    Solo se muestran meses observados para TODOS los préstamos de la cosecha (mínimo de la cosecha; una cosecha
+--    trimestral mezcla 3 meses de originación): el denominador nunca incluye préstamos aún no observados (D31).
+--    Defaults sin fecha de último pago (1.672 en 2013-2018) se asignan al mes 1 (efecto ≈ +0,1 pp, documentado).
 CREATE OR REPLACE TABLE dash_vintage AS
 WITH base AS (
     SELECT l.id,
@@ -14,7 +16,7 @@ WITH base AS (
     FROM loans l JOIN loans_raw r ON l.id = try_cast(r.id AS BIGINT)
     WHERE l.term_months = 36 AND l.issue_year BETWEEN 2013 AND 2018
 ),
-tam AS (SELECT cosecha, count(*) AS prestamos, max(meses_observados) AS meses_obs FROM base GROUP BY 1),
+tam AS (SELECT cosecha, count(*) AS prestamos, min(meses_observados) AS meses_obs FROM base GROUP BY 1),
 defaults_mes AS (SELECT cosecha, mes_default AS mob, count(*) AS defaults
                  FROM base WHERE mes_default IS NOT NULL GROUP BY 1, 2),
 grilla AS (SELECT t.cosecha, m.mob, t.prestamos, t.meses_obs

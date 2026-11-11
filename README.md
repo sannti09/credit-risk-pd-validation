@@ -29,7 +29,7 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
 |---|---|
 | Discrimination (out-of-time 2015) | Gini **0.325** · KS 0.237 · no degradation vs. training (−0.3%) |
 | Benchmark | Lending Club's own grade: Gini 0.357 · regularized GBM challenger: 0.340 |
-| Calibration (out-of-time 2015) | Original model 12.9% vs. 14.9% observed (9 of 10 bands under-predicted) → official model, in its domain: **14.9% vs. 14.6%**, 0 bands under-predicted |
+| Calibration (out-of-time 2015) | Original model 12.9% vs. 14.9% observed (9 of 10 bands significantly under-predicted) → official model, in its domain: **14.9% vs. 14.6%**, 0 bands significantly under-predicted (binomial test) |
 | Stability | Score PSI < 0.10 through 2018; `revol_util` CSI red in 2018 → retraining trigger |
 | Validation verdict | 6 🟢 · 5 🟡 · 2 🔴 — **approved with conditions**, conditions implemented in code |
 | IFRS 9 portfolio (Mar 2019) | 582,796 loans · US$ 4,638 M · stages 88.8% / 10.2% / 1.0% of balance |
@@ -110,7 +110,7 @@ curl -X POST https://jzhpsfgioa.execute-api.us-east-2.amazonaws.com/v1/score \
    ```bash
    uv sync
    uv run python run_pipeline.py   # full pipeline, ~3 minutes
-   uv run pytest                   # 20 tests
+   uv run pytest                   # unit, API, Lambda and parity tests
    ```
 
 ## Limitations

@@ -44,7 +44,7 @@ saldos pendientes, `last_*`, hardship y settlement: existen solo después, y har
 - **Filtros (en orden):** IV train ≥ 0,02 → estabilidad (IV en OOT no cae > 50%) → redundancia
   (|corr WoE| > 0,7: se queda la de mayor IV). `fico_high` fuera de entrada (= `fico_low` + 4).
 - **Resultado (train 2013–14):** 13 variables. Ninguna inestable. `purpose`, `revol_util` e `inq_last_6mths` quedaron
-  justo bajo IV 0,02 al quitar 2012. Detalle en `reports/iv_train_oot.csv`.
+  justo bajo IV 0,02 al quitar 2012. Detalle en `reports/iv_train_valid.csv` (antes `iv_train_oot.csv`).
 - **Observación:** `verification_status` pasa de IV 0,009 a 0,052 en 2015, y `acc_open_past_24mths` casi duplica
   su IV → la población cambió entre cohortes; revisar con PSI en la fase de validación.
 
@@ -262,6 +262,8 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
    puntos (13 variables × ±0,5). Probado en `tests/test_metrics.py`.
 
 ## D15. Informe de validación con semáforos — `notebooks/08_validation_report.py` → `reports/informe_validacion.md`
+> ⚠️ **Cifras reemplazadas por D16 (resultado vigente: 6 🟢 · 5 🟡 · 2 🔴; dominio DTI ≤ 34,99).** Se conserva por trazabilidad.
+
 - El informe **se genera desde los CSV de `reports/`**: si cambian datos o modelo, se regenera sin copiar cifras a mano.
 - **Umbrales** (convención de industria para PD de consumo; están en el script y en el informe):
   Gini ≥ 0,40 / 0,25–0,40 / < 0,25 · KS ≥ 0,30 / 0,20–0,30 / < 0,20 · caída de Gini < 10% / 10–20% / > 20% ·
@@ -283,7 +285,8 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
   Fuera de dominio `predict_pd` y `score` devuelven NaN (no extrapola).
 - **Hallazgo:** LC subió el tope de DTI a 40 en 2014. En OOT 2015 el **3,4%** de los préstamos está fuera de dominio
   y su default es **22,6%** (vs. 14,6% dentro). Dentro de dominio el modelo oficial estima **14,9% vs. 14,6%**
-  observado y **0 de 10 bandas** subestiman. Parte de la descalibración de D9/D11 venía de esos casos.
+  observado y **0 de 10 bandas con subestimación significativa** (test binomial; en 2 bandas la PD queda levemente
+  por debajo, sin significancia). Parte de la descalibración de D9/D11 venía de esos casos.
   (El dominio se definió solo con train; OOT se usó para medir, no para elegir el corte.)
 - **Monitoreo** (`notebooks/09_monitoring.py` → `reports/monitoring.csv`): por cohorte, PSI del score, CSI máximo,
   % fuera de dominio y, si hay resultado, calibración y bandas. Resultado: PSI verde hasta 2018; CSI de `revol_util`
@@ -321,6 +324,8 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
 - "FICO actual < 600" no agrega casos: todos ya caen por la caída de ≥ 50 puntos.
 
 ## D18. NIIF 9 — PD a 12 meses y de vida restante — `notebooks/10_ifrs9_pd.py` → tabla `ifrs9_pd`
+> ⚠️ **Cifras reemplazadas por D21 (etapa 2: saldo 474,4, PD vida restante 16,6%).** Se conserva por trazabilidad.
+
 - **PD de vida desde la originación:** modelo oficial (recalibrado + MoC, D16).
 - **Fuera de dominio (4,8%, DTI > 35):** PD de segmento = default observado de ese segmento en la última cohorte
   madura (2015): **22,6%**. NIIF 9 exige ECL para toda la cartera; el modelo no extrapola, así que se usa el segmento.
@@ -346,6 +351,8 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
   ignora prepagos (un préstamo prepagado sale de la cartera, no "sobrevive"); (4) mes de default aproximado.
 
 ## D19. NIIF 9 — LGD observada — `notebooks/11_ifrs9_lgd.py` → `reports/ifrs9_lgd.csv`
+> ⚠️ **Cifras reemplazadas por D21 (LGD 90,7% con defaults ≥ 24 meses de antigüedad).** Se conserva por trazabilidad.
+
 - **Base:** 76.823 préstamos castigados de las cohortes maduras (36m, 2013–2015), US$ 548 M de EAD al default.
 - **Fórmula:** LGD = 1 − (recoveries − collection_recovery_fee) descontadas / EAD al default;
   EAD al default = monto desembolsado − capital recuperado. Ponderada por EAD.
@@ -361,6 +368,8 @@ Dos revisores independientes revisaron fases 2 y 3: sin errores de cálculo ni f
   (NIIF 9 usa LGD *point-in-time*; el ajuste macro va en escenarios); (3) las etapas 1–3 usan la misma LGD.
 
 ## D20. NIIF 9 — ECL de la cartera — `src/credit_risk/ifrs9.py`, `notebooks/12_ifrs9_ecl.py`
+> ⚠️ **Cifras reemplazadas por D21 y D27 (ECL base 223,6; ponderada **238,1**).** Se conserva por trazabilidad.
+
 - **Cálculo mensual:** ECL = Σ_t PD marginal(t) × LGD × EAD(t) × DF(t). EAD(t) = saldo según el calendario de
   amortización (cuota fija); DF = descuento a la tasa del préstamo. Horizonte: 12 meses (etapa 1), vida restante
   (etapa 2); etapa 3 = LGD × saldo.
@@ -443,6 +452,8 @@ sin fecha de último pago asignados al mes 1 (impacto menor).
   claro/oscuro generado por `notebooks/13_readme_chart.py`.
 
 ## D23. API de scoring y Docker — `api/`, `Dockerfile`, `notebooks/14_export_model.py`
+> ⚠️ **Cifras reemplazadas por D27 (dominio DTI ≤ 34,99; categorías validadas).** Se conserva por trazabilidad.
+
 - **El modelo se exporta a JSON** (`models/scorecard_v1.json`, 7 KB, versionado en git): cortes, WoE, coeficientes,
   intercepto, ajuste de recalibración (+0,184) y dominio. Razones: un `pickle` ejecuta código al cargarse (riesgo de
   seguridad), ata la API a pandas/statsmodels y no es auditable; el JSON se lee, se compara entre versiones y se
@@ -571,6 +582,8 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
 - **Limpieza:** `aws/cleanup.sh` borra base, tabla y bucket (pide escribir BORRAR). Reproducible con `aws/upload.sh`.
 
 ## D29. API en AWS Lambda — `aws/lambda/handler.py`, `aws/deploy_lambda.sh`
+> ⚠️ **Cifras reemplazadas por D30 (la API ya es pública vía API Gateway con cuota).** Se conserva por trazabilidad.
+
 - **Mismo puntuador y mismo JSON del modelo** que la API Docker; sin dependencias (solo biblioteca estándar) →
   paquete de 8 KB, arranque rápido, sin imagen ni servidor encendido. Costo: cobra por invocación (≈ USD 0 con
   poco uso; además cuenta para la actividad de créditos de Lambda).
@@ -592,3 +605,22 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
 - **Verificado desde internet:** health ok; score idéntico a Docker y a Lambda (PD 15,33%, score 536); sin clave → 403;
   entrada inválida → 422. La URL no expone el número de cuenta.
 - `aws/cleanup.sh` borra también la API, el plan y la clave.
+
+## D31. Revisión final antes del tablero (2 revisores independientes)
+**Sin hallazgos altos.** Cifras de README, informe, ECL, puente SFC, etapas, Gini y cartera verificadas; curvas
+2013–2016 recalculadas desde cero (12,5% → 15,4%). Correcciones:
+1. **Curvas de cosecha:** el corte era el máximo de meses observados de la cosecha; en una cosecha trimestral los
+   préstamos del último mes llevan 2 meses menos → el denominador incluía préstamos no observados en los últimos
+   2 puntos (hasta −0,7 pp en cosechas inmaduras). Ahora corte = **mínimo** de la cosecha (`sql/08`, `aws/athena/02`);
+   cosechas maduras sin cambio; paridad Athena = DuckDB re-verificada (666 filas). 1.672 defaults sin fecha de pago
+   se asignan al mes 1 (≈ +0,1 pp), documentado.
+2. **Calibración:** "0 de 10 bandas" → "0 de 10 con subestimación **significativa**" (en 2 bandas la PD oficial queda
+   levemente bajo lo observado, sin significancia). Título del tablero: "within ±2 pp", no "coincide".
+3. **PSI con una sola fuente:** el informe usaba el modelo original con todos los préstamos (`val_psi.csv`: 2018 =
+   0,062); el tablero, el **modelo oficial** dentro de dominio (`monitoring.csv`: 2018 = 0,081). Ahora ambos usan el
+   oficial (el que está en uso). Ambos verdes; `val_psi.csv` se mantiene como análisis del modelo original (D9).
+4. **Unidades** de cada CSV del tablero documentadas en la guía (fracción vs. % vs. US$ M).
+5. Decisiones con cifras viejas marcadas como reemplazadas (D15, D18, D19, D20, D23, D29).
+6. **AWS:** `athena_run.sh` ahora falla (exit 1) si una consulta falla; `cleanup.sh` borra también el log group de
+   Lambda y verifica qué quedó antes de declarar éxito; mensaje de `make_ddl.py` corregido.
+- Descartado: suprimir celdas pequeñas en `cartera.csv` por privacidad (datos públicos de Kaggle, sin datos personales).

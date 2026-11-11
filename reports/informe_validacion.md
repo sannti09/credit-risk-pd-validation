@@ -18,7 +18,7 @@ Umbrales: verde / ámbar / rojo. 6 🟢 · 5 🟡 · 2 🔴
 | Discriminación | KS OOT 2015 | 0.237 | ≥ 0,30 / 0,20–0,30 / < 0,20 | 🟡 ámbar |
 | Discriminación | Caída de Gini train → OOT | 0.3% | < 10% / 10–20% / > 20% | 🟢 verde |
 | Benchmark | Gini propio − Gini grado LC (OOT) | -3.2 pts | ≥ 0 / hasta −5 / < −5 pts | 🟡 ámbar |
-| Estabilidad | PSI del score, máx. 2014–2018 | 0.062 (2018) | < 0,10 / 0,10–0,25 / > 0,25 | 🟢 verde |
+| Estabilidad | PSI del score, máx. 2014–2018 | 0.081 (2018) | < 0,10 / 0,10–0,25 / > 0,25 | 🟢 verde |
 | Estabilidad | CSI máx. por variable, OOT 2015 | 0.060 | < 0,10 / 0,10–0,25 / > 0,25 | 🟢 verde |
 | Estabilidad | CSI máx. por variable, 2018 | 0.382 (revol_util) | < 0,10 / 0,10–0,25 / > 0,25 | 🔴 rojo |
 | Calibración (original) | Brecha relativa PD vs. default, OOT | 13.1% | < 10% / 10–20% / > 20% | 🟡 ámbar |

@@ -16,4 +16,4 @@ STORED AS PARQUET
 LOCATION 's3://{bucket}/curated/loans/';
 MSCK REPAIR TABLE credit_risk.loans;
 """)
-print(f"{len(cols) - 1} columnas + partición issue_year")
+print(f"{len(cols)} columnas + partición issue_year")

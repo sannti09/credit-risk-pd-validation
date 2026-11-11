@@ -12,5 +12,8 @@ while IFS= read -r -d '' q; do
   done
   scanned=$(aws athena get-query-execution --query-execution-id "$id" --query 'QueryExecution.Statistics.DataScannedInBytes' --output text)
   echo "$st  $(echo "$q" | grep -v '^--' | head -1 | cut -c1-60)  (escaneado: $scanned bytes)  id=$id"
-  [[ "$st" == SUCCEEDED ]] || aws athena get-query-execution --query-execution-id "$id" --query 'QueryExecution.Status.StateChangeReason' --output text
+  if [[ "$st" != SUCCEEDED ]]; then  # falla visible: el script termina con error (D31)
+    aws athena get-query-execution --query-execution-id "$id" --query 'QueryExecution.Status.StateChangeReason' --output text >&2
+    exit 1
+  fi
 done

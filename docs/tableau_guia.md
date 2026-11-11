@@ -9,6 +9,23 @@ Tiempo estimado: 2–3 horas la primera vez. Términos en inglés porque así ap
 
 ---
 
+## Unidades de cada archivo (formatea el eje según esto)
+| Archivo | Columnas en **fracción** (0,15 = 15%) → formato *Percentage* | Columnas ya en **%** (15 = 15%) → *Number* + sufijo "%" |
+|---|---|---|
+| vintage | tasa_default_acum | — |
+| calibracion_bandas | — | obs, orig, final |
+| monitoreo | pd_media, dr_obs, dr_fuera_dominio, psi_score, csi_max (índices, no %) | pct_fuera_dominio |
+| ecl_etapas | — | cobertura_pct · (saldo y ecl en **US$ M**) |
+| ecl_sensibilidad | — | var_vs_base_pct, pct_saldo_etapa2 · (ecl_musd en US$ M) |
+| sfc_calificaciones | pd12_modelo | pct_saldo · (saldo, pe_A, pe_B en US$ M) |
+| originacion | default_obs, pct_con_resultado | tasa_media · (monto en US$) |
+| cartera | pd_aplicable_pond | — · (saldo en **US$**, no millones) |
+| momento_default | pct_defaults, acumulado = **participación de los defaults** (suman 1), no tasa de default | — |
+| desempeno_modelos | gini, ks (índices); pd_media, dr_obs | — |
+
+"desempeno_modelos": la fila "scorecard (13 var.)" es el scorecard **sin recalibrar**; la recalibración no cambia el
+Gini (mismo orden), solo el nivel de PD.
+
 ## 0. Preparación (10 min)
 
 1. Instala **Tableau Public** (gratis): https://public.tableau.com → *Download the App*. Crea tu perfil público.
@@ -48,7 +65,9 @@ que digan la conclusión ("El default sube con cada cosecha"), no solo el tema (
 4. Renombra los alias (clic derecho en la leyenda → *Edit Aliases*): obs → "Default observado",
    orig → "Modelo original", final → "Modelo oficial (recalibrado)".
 5. Eje en porcentaje (los valores ya están en %, así que formato *Number* con sufijo "%").
-6. Título: "Banda 1 = más riesgo. El modelo oficial coincide con el default observado en 2015".
+6. Título (en inglés, ver D31): "Band 1 = highest risk. The recalibrated model tracks observed defaults within ±2 pp;
+   no band is significantly under-predicted". (No decir "coincide": en 2 bandas queda levemente por debajo, sin
+   significancia estadística.)
 
 ### Hoja 3: Estabilidad (`monitoreo.csv`)
 *Mensaje: el score es estable; algunas variables se mueven en 2018.*
