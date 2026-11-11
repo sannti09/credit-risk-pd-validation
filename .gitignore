@@ -29,3 +29,6 @@ models/*.pkl
 # Material de trabajo (no se publica; ver D33)
 docs/tableau_guia.md
 docs/referencias/
+
+# Práctica de entrevista: SOLO LOCAL, nunca se publica
+PRACTICA_ENTREVISTA.md
