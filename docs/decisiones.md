@@ -556,3 +556,16 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
 - **Nota sobre la revisión:** el revisor marcó como no verificada la vigencia de la CE 004/2026 porque el PDF es un
   escaneo; sí se leyó como imagen (instrucción SEXTA: rige desde el 1-jun-2026). Sigue pendiente confirmar que las
   matrices de 2016 continúan en el texto depurado de la nueva CBF.
+
+## D28. AWS: data lake en S3 + SQL en Athena — `aws/`
+- **Cuenta:** plan gratuito de AWS (USD 100 en créditos, sin cobros a la tarjeta mientras siga en ese plan), región
+  us-east-2. **Credenciales:** `aws login` (navegador, temporales, sin llaves de acceso guardadas). No se usó el
+  "Agent Toolkit" (instalaba servidores MCP y modificaba `CLAUDE.md`; no era necesario).
+- **S3:** bucket privado (acceso público bloqueado en sus 4 opciones, cifrado por defecto, etiqueta
+  `project=credit-risk-pd`). Datos: tabla `loans` limpia en **Parquet particionado por año** (86 MB vs. 1,6 GB del
+  CSV), no el CSV crudo.
+- **Athena:** tabla externa generada desde el esquema real del Parquet (`aws/make_ddl.py`). Curvas de cosecha
+  traducidas al dialecto Trino (`aws/athena/02_vintage.sql`).
+- **Verificación:** 688 filas idénticas a DuckDB (mismos defaults acumulados; diferencia de tasa 5·10⁻⁷ por redondeo).
+  Athena leyó **2,3 MB de 90 MB** (poda de particiones + formato columnar) → costo ≈ USD 0.
+- **Limpieza:** `aws/cleanup.sh` borra base, tabla y bucket (pide escribir BORRAR). Reproducible con `aws/upload.sh`.

@@ -81,6 +81,13 @@ curl -X POST localhost:8000/score -H "Content-Type: application/json" \
 Response: PD, score, whether the applicant is inside the model's domain, and the top-3 **reason codes**
 (variables that cost the most points). Out-of-domain applicants (FICO < 660 or DTI > 34.99) get no PD.
 
+## Cloud (AWS)
+
+The cleaned loan table is stored in S3 as **Parquet partitioned by year** (86 MB vs. 1.6 GB of raw CSV) and queried
+with **Athena**. The vintage-curve SQL runs in the cloud and returns results identical to the local DuckDB version,
+scanning only 2.3 MB thanks to partition pruning and columnar storage. Scripts in `aws/` (upload, Athena DDL generated
+from the Parquet schema, cleanup).
+
 ## Reproduce
 
 1. Download the [Lending Club dataset from Kaggle](https://www.kaggle.com/datasets/wordsforthewise/lending-club)
@@ -101,7 +108,7 @@ Response: PD, score, whether the applicant is inside the model's domain, and the
 
 ## Stack
 
-Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · GitHub Actions · pytest · uv
+Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · GitHub Actions · AWS (S3, Athena) · pytest · uv
 
 ---
 
