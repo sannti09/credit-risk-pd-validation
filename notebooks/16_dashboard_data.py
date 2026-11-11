@@ -19,6 +19,15 @@ for src, dst in {"calibration_bands_oot.csv": "calibracion_bandas.csv", "monitor
                  "ifrs9_default_timing.csv": "momento_default.csv"}.items():
     if (Path("reports") / src).exists():
         shutil.copy(Path("reports") / src, OUT / dst)
+# Ajustes para Tableau: nombrar la primera columna (índice) y quitar filas "total" (Tableau suma por su cuenta)
+import pandas as pd  # noqa: E402
+
+for f, name in {"ecl_escenarios.csv": "escenario", "ecl_sensibilidad.csv": "supuesto", "monitoreo.csv": "cohorte",
+                "ecl_etapas.csv": "etapa", "sfc_calificaciones.csv": "calificacion"}.items():
+    t = pd.read_csv(OUT / f)
+    t = t.rename(columns={t.columns[0]: name})
+    t = t[t[name].astype(str) != "total"]
+    t.to_csv(OUT / f, index=False)
 print(sorted(p.name for p in OUT.iterdir()))
 v = con.sql("select cosecha, max(mob) mob, round(100*max(tasa_default_acum),1) dr from dash_vintage "
             "where cosecha like '%Q1' group by 1 order by 1").fetchall()
