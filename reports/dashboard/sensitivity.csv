@@ -1,0 +1,10 @@
+assumption,change_vs_base_pct,ecl_musd,direction
+Stage 2 PD multiplier 1.5 (base 2),-4.99,212.46,Lowers ECL
+Stage 2 PD multiplier 3 (base 2),11.39,249.09,Raises ECL
+All 31-120 days past due in stage 3,21.07,270.74,Raises ECL
+All 31-120 days past due in stage 2,-16.54,186.65,Lowers ECL
+PD without trend adjustment,-7.26,207.38,Lowers ECL
+LGD including 2017 defaults,-0.31,222.93,Lowers ECL
+SICR threshold: FICO drop 30 (base 50),9.06,243.89,Raises ECL
+SICR threshold: FICO drop 70 (base 50),-4.33,213.93,Lowers ECL
+LGD 80% (base 90.7%),-11.76,197.32,Lowers ECL

@@ -63,6 +63,36 @@ kpis = pd.DataFrame([
     ("SFC reference model (Matrix A)", pd.read_csv("reports/sfc_mrco_comparison.csv", index_col=0).loc["total", "pe_A"], "US$ M"),
 ], columns=["kpi", "value", "unit"])
 kpis.round(1).to_csv(OUT / "kpis.csv", index=False)
+# ---- Hojas 6-8, en inglés y con la forma que necesita cada gráfico (D32) ----
+st = pd.read_csv("reports/ifrs9_ecl_by_stage.csv", index_col=0).drop(index="total")
+mix = pd.DataFrame({"stage": [f"Stage {int(i)}" for i in st.index],
+                    "Share of balance": st.saldo / st.saldo.sum(), "Share of expected loss": st.ecl / st.ecl.sum()})
+mix.melt(id_vars="stage", var_name="metric", value_name="share").round(4).to_csv(OUT / "stage_mix.csv", index=False)
+
+br = pd.read_csv("reports/sfc_vs_ifrs9_bridge.csv")
+names = ["SFC provision (Matrix A)", "LGD: 75% regulatory -> 90.7% observed", "PD: SFC matrix -> model 12m PD",
+         "Stage 2: lifetime horizon", "Balance amortization", "Discounting at effective rate", "IFRS 9 ECL (base)"]
+br["step"], br["order"] = names, range(1, len(names) + 1)
+br["kind"] = ["Start"] + ["Increase" if v >= 0 else "Decrease" for v in br.efecto_musd[1:-1]] + ["Total"]
+run = br.efecto_musd.iloc[:-1].cumsum()
+br["start"] = [0.0] + list(run.iloc[:-1]) + [0.0]          # base de cada barra
+br["effect"] = list(br.efecto_musd.iloc[:-1]) + [br.efecto_musd.iloc[-1]]
+br[["order", "step", "kind", "start", "effect"]].round(2).to_csv(OUT / "bridge.csv", index=False)
+
+se = pd.read_csv("reports/ifrs9_sensitivity.csv", index_col=0)
+lab = {"multiplicador etapa 2 = 1,5": "Stage 2 PD multiplier 1.5 (base 2)",
+       "multiplicador etapa 2 = 3": "Stage 2 PD multiplier 3 (base 2)",
+       "Late 31-120 todo en etapa 3 (regla anterior)": "All 31-120 days past due in stage 3",
+       "Late 31-120 todo en etapa 2": "All 31-120 days past due in stage 2",
+       "PD sin tendencia (solo recalibración 2014)": "PD without trend adjustment",
+       "LGD con defaults hasta 2017": "LGD including 2017 defaults",
+       "umbral SICR caída FICO = 30": "SICR threshold: FICO drop 30 (base 50)",
+       "umbral SICR caída FICO = 70": "SICR threshold: FICO drop 70 (base 50)",
+       "LGD = 80%": "LGD 80% (base 90.7%)"}  # LGD 45% (Basilea) se excluye: no es un supuesto plausible (D19)
+sens = se.loc[se.index.isin(lab)].rename(index=lab).rename_axis("assumption").reset_index()
+sens["direction"] = sens.var_vs_base_pct.map(lambda v: "Raises ECL" if v >= 0 else "Lowers ECL")
+sens[["assumption", "var_vs_base_pct", "ecl_musd", "direction"]].rename(
+    columns={"var_vs_base_pct": "change_vs_base_pct"}).round(2).to_csv(OUT / "sensitivity.csv", index=False)
 print(sorted(p.name for p in OUT.iterdir()))
 v = con.sql("select cosecha, max(mob) mob, round(100*max(tasa_default_acum),1) dr from dash_vintage "
             "where cosecha like '%Q1' group by 1 order by 1").fetchall()

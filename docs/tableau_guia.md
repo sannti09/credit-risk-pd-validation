@@ -176,3 +176,27 @@ Una hoja por cifra (3 tarjetas: ECL, cobertura, saldo).
 4. Duplica la hoja (clic derecho en la pestaña → *Duplicate*) y cambia el filtro: "Coverage (ECL / balance)"
    → `<SUM(value)>%`; "Live portfolio balance" → `US$ <SUM(value)> M`.
 5. Sin título de hoja (clic derecho en el título → *Hide Title*): el texto ya lo dice.
+
+## Hojas 6–8 — versión actualizada (D32; reemplaza las hojas 6, 7 y 8 de arriba)
+Archivos nuevos en inglés: `stage_mix.csv`, `bridge.csv`, `sensitivity.csv`.
+
+### Hoja 6 — ECL by stage: barras apiladas al 100% (`stage_mix.csv`)
+1. **metric** a Rows, **share** a Columns, **stage** a Color. Marks: *Bar* (salen 2 barras apiladas).
+2. Colores: Stage 1 gris claro, Stage 2 ámbar, Stage 3 rojo. **share** a Label (formato %, 0 decimales).
+3. Título: **Stage 3 is 1% of the balance but 19% of expected loss** / gris: *Live portfolio at Mar-2019,
+   US$ 4,638 M. Stage 3 = 90+ days past due.*
+
+### Hoja 7 — SFC → IFRS 9 bridge: cascada (`bridge.csv`)
+1. **step** a Columns; ordénalo por **order** (clic derecho → Sort → Field: order, ascendente).
+2. Marks: **Gantt Bar**. **start** a Rows. **effect** a **Size**.
+3. **kind** a Color: Start y Total azul oscuro, Increase rojo, Decrease verde.
+4. **effect** a Label (US$ M, 1 decimal). Rota los nombres del eje X si no caben (clic derecho → Rotate Label).
+5. Título: **Why the SFC provision and IFRS 9 ECL nearly coincide** / gris: *Offsetting effects: higher observed LGD
+   and lifetime horizon add; amortization and discounting subtract. US$ M.*
+
+### Hoja 8 — Sensitivities: barras divergentes (`sensitivity.csv`)
+1. **assumption** a Rows, **change_vs_base_pct** a Columns. Ordena por change_vs_base_pct (descendente).
+2. **direction** a Color: Raises ECL rojo, Lowers ECL verde. Línea de referencia en 0 (Analytics → Constant Line).
+3. **change_vs_base_pct** a Label (formato `+0.0"%";-0.0"%"`).
+4. Título: **What moves the ECL: staging rules matter more than expert judgments** / gris: *Change vs. base ECL
+   (US$ 223.6 M), one assumption at a time. Basel's 45% LGD excluded (not applicable to this portfolio).*
