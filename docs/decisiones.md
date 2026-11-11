@@ -569,3 +569,15 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
 - **Verificación:** 688 filas idénticas a DuckDB (mismos defaults acumulados; diferencia de tasa 5·10⁻⁷ por redondeo).
   Athena leyó **2,3 MB de 90 MB** (poda de particiones + formato columnar) → costo ≈ USD 0.
 - **Limpieza:** `aws/cleanup.sh` borra base, tabla y bucket (pide escribir BORRAR). Reproducible con `aws/upload.sh`.
+
+## D29. API en AWS Lambda — `aws/lambda/handler.py`, `aws/deploy_lambda.sh`
+- **Mismo puntuador y mismo JSON del modelo** que la API Docker; sin dependencias (solo biblioteca estándar) →
+  paquete de 8 KB, arranque rápido, sin imagen ni servidor encendido. Costo: cobra por invocación (≈ USD 0 con
+  poco uso; además cuenta para la actividad de créditos de Lambda).
+- **Configuración:** Python 3.12, ARM64 (más barato), 128 MB, 5 s de timeout, etiqueta `project=credit-risk-pd`.
+  **Rol de mínimo privilegio:** solo `AWSLambdaBasicExecutionRole` (escribir sus logs); no puede leer S3 ni nada más.
+- **Validación** equivalente a la API FastAPI (obligatorios, rangos, categorías de LC → 422); acepta invocación
+  directa o evento HTTP. Pruebas en `tests/test_lambda.py` (misma salida que el puntuador).
+- **Verificado en AWS:** PD 15,33% y score 536 (idéntico a Docker), fuera de dominio sin PD, inválido → 422.
+- **Sin URL pública por ahora:** se invoca con credenciales (`aws lambda invoke`). Exponerla en internet es decisión
+  aparte (ver resumen al usuario). `aws/cleanup.sh` borra también la función y su rol.

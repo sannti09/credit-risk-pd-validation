@@ -88,6 +88,9 @@ with **Athena**. The vintage-curve SQL runs in the cloud and returns results ide
 scanning only 2.3 MB thanks to partition pruning and columnar storage. Scripts in `aws/` (upload, Athena DDL generated
 from the Parquet schema, cleanup).
 
+The same scorer is also deployed as an **AWS Lambda** function (8 KB package, no dependencies, least-privilege role),
+returning the same PD and reason codes as the Docker API.
+
 ## Reproduce
 
 1. Download the [Lending Club dataset from Kaggle](https://www.kaggle.com/datasets/wordsforthewise/lending-club)
@@ -108,7 +111,7 @@ from the Parquet schema, cleanup).
 
 ## Stack
 
-Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · GitHub Actions · AWS (S3, Athena) · pytest · uv
+Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · GitHub Actions · AWS (S3, Athena, Lambda) · pytest · uv
 
 ---
 
