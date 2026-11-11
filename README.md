@@ -78,8 +78,28 @@ Click an image to open the interactive version (filters and tooltips) on Tableau
 | 4. IFRS 9 | Staging (DPD + FICO-drop SICR), PD term structure, LGD, monthly ECL with amortizing EAD and EIR discounting, scenarios | `sql/07`, `notebooks/10–12`, `src/credit_risk/ifrs9.py` |
 | 5. SFC benchmark | Provision under Colombia's consumer reference model (MRCO, matrices A/B) vs. IFRS 9 ECL | `notebooks/15`, `docs/decisiones.md` (D25, sources) |
 
-- **Validation report:** [`reports/informe_validacion.md`](reports/informe_validacion.md) (generated from results, in Spanish)
-- **Decision log:** [`docs/decisiones.md`](docs/decisiones.md) — every modeling decision with its rationale (in Spanish)
+- **Validation report:** [`reports/validation_report.md`](reports/validation_report.md) — generated from the results
+  (Spanish version: [`informe_validacion.md`](reports/informe_validacion.md))
+- **Decision log:** [`docs/decisiones.md`](docs/decisiones.md) — every modeling decision with its rationale (in Spanish;
+  key decisions summarized below)
+
+## Key modeling decisions
+
+| Decision | Choice | Why |
+|---|---|---|
+| Default definition | Charged off, default or 31–120 days late = 1; fully paid = 0 | Standard lifetime-default target; unresolved loans excluded |
+| Sample | 36-month loans, 2013–2015 vintages | Mature outcomes only (right censoring); 2012 lacked bureau fields |
+| Split | Train 2013 · validation 2014 · out-of-time 2015 | The final test never drives modeling choices |
+| Predictors | Application and bureau data only | No post-origination fields (leakage); Lending Club's grade, rate and installment excluded |
+| Binning | Monotonic coarse classing, ≥ 5% per bin | Explainable, stable Weight of Evidence |
+| Calibration | Intercept recalibration + margin of conservatism | Defaults rose ~1.4 pts/year; ranking was fine, level was not |
+| Domain | FICO ≥ 660, DTI ≤ 34.99 | Ranges seen in development; no PD outside them |
+| IFRS 9 staging | Stage 3 at 90+ days past due; stage 2 at 31–89 days or a FICO drop ≥ 50 | 90-day default presumption; days past due estimated from the last payment date |
+| LGD | Observed 90.7%, discounted | Measured on charged-off recoveries instead of Basel's 45% |
+| Challenger | Gradient boosting with shallow trees and monotonic constraints | Overfitting gap cut from 0.14 to 0.03 Gini points |
+
+**Languages:** code, README, dashboard, API and validation report are in English. The detailed decision log is in
+Spanish (the project was developed in Colombia); its key points are in the table above.
 
 ## Scoring API
 

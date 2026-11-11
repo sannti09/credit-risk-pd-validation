@@ -631,3 +631,10 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
 - **Solo local (en `.gitignore`):** la guía de construcción del tablero (`docs/tableau_guia.md`), los documentos de la
   SFC (`docs/referencias/`, de terceros: se citan con enlace) y las notas personales.
 - Se dejaron de generar 10 CSV del tablero en español que fueron reemplazados por las versiones en inglés.
+
+## D34. Idiomas del repositorio
+- **Inglés:** README (con la tabla de decisiones clave), tablero, API e informe de validación
+  (`reports/validation_report.md`, generado por el mismo script que la versión en español y con las mismas cifras).
+- **Español:** este registro completo de decisiones y la versión en español del informe. La regla se declara en el README.
+- Los nombres internos en español del código (p. ej. `saldo`, `etapa`) se mantienen: renombrarlos tendría más riesgo
+  que beneficio. Los proyectos nuevos se escriben en inglés desde el inicio.

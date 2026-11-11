@@ -1,13 +1,13 @@
 # Informe de validación independiente — Scorecard PD (Lending Club, 36 meses)
 
-*Generado automáticamente por `notebooks/08_validation_report.py` el 2026-11-10. No editar a mano.*
+*Generado automáticamente por `notebooks/08_validation_report.py` el 2026-11-11. No editar a mano.*
 
 ## 1. Alcance
 - **Modelo:** scorecard logístico sobre WoE, 13 variables de solicitud y buró; escala 600 = 50:1, PDO 20.
 - **Uso previsto:** PD de originación (vida del préstamo a 36 meses) para solicitantes que cumplen la política de
   Lending Club (**FICO ≥ 660, DTI ≤ 34,99**, rangos vistos en desarrollo). Fuera de ese dominio el modelo no entrega PD (D16).
 - **Muestras:** desarrollo 2013 · validación 2014 · *out-of-time* (OOT) 2015 · estabilidad 2016–2018 (sin resultado).
-- **Fuera de alcance:** préstamos a 60 meses, PD a 12 meses / NIIF 9 (fase siguiente).
+- **Fuera de alcance:** préstamos a 60 meses. La ECL NIIF 9 se documenta aparte (README y D17–D21).
 
 ## 2. Resumen de semáforos
 Umbrales: verde / ámbar / rojo. 6 🟢 · 5 🟡 · 2 🔴
@@ -42,9 +42,8 @@ Umbrales: verde / ámbar / rojo. 6 🟢 · 5 🟡 · 2 🔴
 
 ## 4. Limitaciones
 - Datos de 2013–2015 de una plataforma P2P de EE. UU.: solo fines demostrativos.
-- Sin LGD/EAD observadas en este análisis (fase NIIF 9).
 - Validación 2014 optimista (se usó para decisiones de modelado). La referencia es OOT 2015.
-- Detalle completo de decisiones y limitaciones: `docs/decisiones.md` (D1–D14).
+- Detalle completo de decisiones y limitaciones: `docs/decisiones.md`.
 
 ## 5. Conclusión
 **Aprobado con condiciones — condiciones implementadas** (`src/credit_risk/model.py`, `models/pd_model_final.pkl`):

@@ -114,7 +114,7 @@ md = f"""# Informe de validación independiente — Scorecard PD (Lending Club, 
 - **Uso previsto:** PD de originación (vida del préstamo a 36 meses) para solicitantes que cumplen la política de
   Lending Club (**FICO ≥ 660, DTI ≤ 34,99**, rangos vistos en desarrollo). Fuera de ese dominio el modelo no entrega PD (D16).
 - **Muestras:** desarrollo 2013 · validación 2014 · *out-of-time* (OOT) 2015 · estabilidad 2016–2018 (sin resultado).
-- **Fuera de alcance:** préstamos a 60 meses, PD a 12 meses / NIIF 9 (fase siguiente).
+- **Fuera de alcance:** préstamos a 60 meses. La ECL NIIF 9 se documenta aparte (README y D17–D21).
 
 ## 2. Resumen de semáforos
 Umbrales: verde / ámbar / rojo. {conteo.get('verde', 0)} 🟢 · {conteo.get('ámbar', 0)} 🟡 · {conteo.get('rojo', 0)} 🔴
@@ -134,9 +134,8 @@ Umbrales: verde / ámbar / rojo. {conteo.get('verde', 0)} 🟢 · {conteo.get('�
 
 ## 4. Limitaciones
 - Datos de 2013–2015 de una plataforma P2P de EE. UU.: solo fines demostrativos.
-- Sin LGD/EAD observadas en este análisis (fase NIIF 9).
 - Validación 2014 optimista (se usó para decisiones de modelado). La referencia es OOT 2015.
-- Detalle completo de decisiones y limitaciones: `docs/decisiones.md` (D1–D14).
+- Detalle completo de decisiones y limitaciones: `docs/decisiones.md`.
 
 ## 5. Conclusión
 **Aprobado con condiciones — condiciones implementadas** (`src/credit_risk/model.py`, `models/pd_model_final.pkl`):
@@ -148,4 +147,81 @@ Pendiente de seguimiento: CSI de `revol_util` en rojo en 2018 y el aumento de so
 ({mon.loc['2018', 'pct_fuera_dominio']:.1f}% en 2018) → candidatos a disparar el reentrenamiento.
 """
 open(R + "informe_validacion.md", "w").write(md)
-print(md[md.index("## 2."):md.index("## 3.")])
+
+# ---- Versión en inglés: mismas cifras y semáforos, solo cambia el texto (D34) ----
+import re  # noqa: E402
+
+ST = {"verde": "green", "ámbar": "amber", "rojo": "red", "info": "info"}
+DIM = {"Discriminación": "Discrimination", "Estabilidad": "Stability", "Calibración (original)": "Calibration (original)",
+       "Calibración (recalibrado + MoC)": "Calibration (recalibrated + MoC)", "Calibración": "Calibration",
+       "Modelo oficial (dentro de dominio)": "Official model (in domain)", "Dominio": "Domain",
+       "Representatividad": "Representativeness"}
+TEST = {"Caída de Gini train → OOT": "Gini drop, train → OOT",
+        "Gini propio − Gini grado LC (OOT)": "Own Gini − LC grade Gini (OOT)",
+        "PSI del score, máx. 2014–2018": "Score PSI, max. 2014–2018",
+        "CSI máx. por variable, OOT 2015": "Max. variable CSI, OOT 2015",
+        "CSI máx. por variable, 2018": "Max. variable CSI, 2018",
+        "Brecha relativa PD vs. default, OOT": "Relative gap PD vs. default rate, OOT",
+        "Bandas con subestimación significativa (binomial)": "Bands significantly under-predicted (binomial)",
+        "% de solicitudes fuera de dominio (2015 → 2018)": "% of applications out of domain (2015 → 2018)",
+        "Hosmer-Lemeshow OOT (p-valor)": "Hosmer-Lemeshow OOT (p-value)",
+        "PSI aprobados vs. rechazados (FICO)": "PSI approved vs. rejected (FICO)"}
+TXT = {" de 10": " of 10", "hasta −5": "down to −5",
+       "informativo: se les niega PD; default fuera de dominio en 2015 = ":
+           "informative: no PD is issued; 2015 out-of-domain default rate = ",
+       "informativo: con n ≈ 283 mil rechaza diferencias mínimas": "informative: with n ≈ 283k it rejects tiny gaps",
+       "informativo: diferencia esperada por la política de LC": "informative: expected given LC's credit policy"}
+
+
+def en(t):
+    for a, b in TXT.items():
+        t = t.replace(a, b)
+    return re.sub(r"(\d),(\d)", r"\1.\2", t)
+
+
+tabla_en = "\n".join(f"| {DIM.get(d, d)} | {TEST.get(p, p)} | {en(r)} | {en(u)} | {EMOJI[s]} {ST[s]} |"
+                      for d, p, r, u, s in rows)
+md_en = f"""# Independent validation report — PD scorecard (Lending Club, 36-month loans)
+
+*Generated automatically by `notebooks/08_validation_report.py` on {date.today():%Y-%m-%d}. Do not edit by hand.
+Spanish version: [`informe_validacion.md`](informe_validacion.md).*
+
+## 1. Scope
+- **Model:** logistic scorecard on WoE, 13 application and bureau variables; scale 600 = 50:1 odds, PDO 20.
+- **Intended use:** origination PD (36-month loan lifetime) for applicants within Lending Club's policy (**FICO ≥ 660,
+  DTI ≤ 34.99**, the ranges seen in development). Outside that domain the model issues no PD.
+- **Samples:** development 2013 · validation 2014 · out-of-time (OOT) 2015 · stability 2016–2018 (no outcomes yet).
+- **Out of scope:** 60-month loans. The IFRS 9 expected credit loss is documented separately (README).
+
+## 2. Traffic-light summary
+Thresholds: green / amber / red. {conteo.get('verde', 0)} 🟢 · {conteo.get('ámbar', 0)} 🟡 · {conteo.get('rojo', 0)} 🔴
+
+| Dimension | Test | Result | Threshold (green / amber / red) | Status |
+|---|---|---|---|---|
+{tabla_en}
+
+## 3. Findings
+| # | Severity | Finding | Recommendation |
+|---|---|---|---|
+| F1 | High | **PD under-estimation:** the original model predicts {100 * orig.pd_media:.1f}% against {100 * orig.dr_obs:.1f}% observed out of time; {int(orig.bandas_rojas)} of 10 bands are significantly under-predicted. Cause: the default rate rises ~1.4 points per year. | **Implemented:** official model recalibrated with a margin of conservatism; within its domain it predicts {100 * mon.loc['oot 2015', 'pd_media']:.1f}% vs. {100 * mon.loc['oot 2015', 'dr_obs']:.1f}% observed, with no band significantly under-predicted. Re-estimate the margin yearly. |
+| F2 | Medium | **Moderate discriminatory power:** OOT Gini {gini_oot:.3f}, {100 * abs(vs_lc):.1f} points below Lending Club's grade. | Acceptable given public data only. The regularized gradient-boosting challenger reaches {gbm_oot:.3f}: assess whether the gain justifies lower explainability. |
+| F3 | Medium | **Population drift in 2017–2018:** CSI of `{csi_2018.index[0]}` = {csi_2018.iloc[0]:.2f} and of `{csi_2018.index[1]}` = {csi_2018.iloc[1]:.2f} in 2018; the score PSI stays green. | Quarterly CSI monitoring; trigger a review if the score PSI exceeds 0.10. |
+| F4 | Medium | **Selection bias and domain:** the model only observes approved loans (59% of rejected applicants with a valid FICO are below 660). Lending Club also raised its DTI cap from 35 to 40 in 2014: in 2015, {mon.loc['oot 2015', 'pct_fuera_dominio']:.1f}% of loans have DTI > 35, with a {100 * mon.loc['oot 2015', 'dr_fuera_dominio']:.1f}% default rate. | **Implemented:** out of domain the model returns no PD. Those cases need a separate policy or a model retrained with DTI > 35. |
+| F5 | Low | **OOT not fully blind:** the idea of the margin of conservatism came after observing the 2015 gap. | Confirm calibration on the next mature cohort. |
+
+## 4. Limitations
+- 2013–2015 data from a US peer-to-peer platform: demonstrative purposes only.
+- The 2014 validation sample is optimistic (it was used for modeling decisions); the reference is OOT 2015.
+- Full decision log (in Spanish): `docs/decisiones.md`.
+
+## 5. Conclusion
+**Approved with conditions — conditions implemented** (`src/credit_risk/model.py`, `models/pd_model_final.pkl`):
+1. The PD is always recalibrated with the margin of conservatism (intercept adjustment {delta:+.3f}).
+2. Outside the domain (FICO ≥ 660, DTI ≤ 34.99) the model issues no PD.
+3. Cohort monitoring in `notebooks/09_monitoring.py` (PSI, CSI, % out of domain, calibration).
+
+To follow up: `revol_util` CSI red in 2018 and the rise in out-of-domain applications
+({mon.loc['2018', 'pct_fuera_dominio']:.1f}% in 2018) → candidate retraining triggers.
+"""
+open(R + "validation_report.md", "w").write(md_en)
+print(md_en[md_en.index("## 2."):md_en.index("## 3.")])
