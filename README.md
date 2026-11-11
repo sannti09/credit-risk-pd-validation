@@ -23,6 +23,14 @@ End-to-end credit risk project on **2.26 million Lending Club consumer loans (20
   <img src="docs/img/calibration_oot.png" alt="Default rate by risk band in the 2015 out-of-time sample: the original model under-predicts in every band, the recalibrated official model matches observed defaults." width="760">
 </picture>
 
+## Interactive dashboard (Tableau Public)
+
+Click an image to open the interactive version (filters and tooltips) on Tableau Public.
+
+<a href="https://public.tableau.com/app/profile/santiago.rueda4047/viz/CreditRiskPDIFRS9LendingClub/Vintage">
+  <img src="docs/img/tableau/vintage.png" alt="Cumulative default rate by months on book for each quarterly vintage: each new vintage defaults more, from 12.5% (2013) to 15.4% (2016) at 36 months." width="560">
+</a>
+
 ## Key results
 
 | Area | Result |
