@@ -32,6 +32,9 @@ def _resp(code: int, body: dict) -> dict:
 
 
 def lambda_handler(event, context=None):
+    path = (event.get("path") or event.get("rawPath") or "") if isinstance(event, dict) else ""
+    if path.endswith("/health"):  # GET /health desde API Gateway (sin cuerpo)
+        return _resp(200, {"status": "ok", "model_version": SC.spec["version"]})
     try:
         x = json.loads(event["body"]) if isinstance(event, dict) and "body" in event else event
     except (TypeError, ValueError):

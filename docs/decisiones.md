@@ -581,3 +581,14 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
 - **Verificado en AWS:** PD 15,33% y score 536 (idéntico a Docker), fuera de dominio sin PD, inválido → 422.
 - **Sin URL pública por ahora:** se invoca con credenciales (`aws lambda invoke`). Exponerla en internet es decisión
   aparte (ver resumen al usuario). `aws/cleanup.sh` borra también la función y su rol.
+
+## D30. API pública con tope mensual — `aws/deploy_api_gateway.sh`
+- **API Gateway (REST, regional)** → Lambda (integración proxy). Rutas: `POST /score`, `GET /health`.
+- **Clave obligatoria + plan de uso:** **100.000 llamadas/mes**, 5 por segundo, ráfagas de 10. En AWS el tope mensual
+  solo existe asociado a una clave; la clave se **publica a propósito en el README** (cualquiera la usa) y el tope
+  aplica a todos. Llamadas sin clave o por encima del tope se rechazan **antes de invocar Lambda**.
+- **Costo en el peor caso (tope agotado):** < USD 0,40/mes (API Gateway ≈ USD 3,50 por millón + Lambda), cubierto
+  por créditos; en el plan gratuito no hay cobro a la tarjeta.
+- **Verificado desde internet:** health ok; score idéntico a Docker y a Lambda (PD 15,33%, score 536); sin clave → 403;
+  entrada inválida → 422. La URL no expone el número de cuenta.
+- `aws/cleanup.sh` borra también la API, el plan y la clave.

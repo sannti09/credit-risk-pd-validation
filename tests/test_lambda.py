@@ -25,3 +25,8 @@ def test_lambda_validation():
     assert lambda_handler({"dti": 10})["statusCode"] == 422
     assert lambda_handler({**APP, "fico_low": 1000})["statusCode"] == 422
     assert lambda_handler({"body": "no es json"})["statusCode"] == 400
+
+
+def test_lambda_health_via_api_gateway_event():
+    r = lambda_handler({"path": "/v1/health", "httpMethod": "GET", "body": None})
+    assert r["statusCode"] == 200 and json.loads(r["body"])["status"] == "ok"

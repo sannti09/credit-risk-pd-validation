@@ -91,6 +91,17 @@ from the Parquet schema, cleanup).
 The same scorer is also deployed as an **AWS Lambda** function (8 KB package, no dependencies, least-privilege role),
 returning the same PD and reason codes as the Docker API.
 
+### Try the live API
+
+Public endpoint behind **API Gateway** with a shared key and a usage plan (100,000 calls/month, 5 per second): the
+key below is public on purpose; the monthly quota caps usage for everyone.
+
+```bash
+curl -X POST https://jzhpsfgioa.execute-api.us-east-2.amazonaws.com/v1/score \
+  -H "x-api-key: S01nstfY6u5S0FZrrE80d3J0gr0yK9XE37xLS7Qs" -H "Content-Type: application/json" \
+  -d '{"fico_low": 690, "dti": 18.5, "annual_inc": 65000, "revol_util": 55, "home_ownership": "RENT"}'
+```
+
 ## Reproduce
 
 1. Download the [Lending Club dataset from Kaggle](https://www.kaggle.com/datasets/wordsforthewise/lending-club)
@@ -111,7 +122,7 @@ returning the same PD and reason codes as the Docker API.
 
 ## Stack
 
-Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · GitHub Actions · AWS (S3, Athena, Lambda) · pytest · uv
+Python (pandas, scikit-learn, statsmodels, matplotlib) · DuckDB (SQL) · FastAPI · Docker · GitHub Actions · AWS (S3, Athena, Lambda, API Gateway) · pytest · uv
 
 ---
 
