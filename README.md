@@ -76,7 +76,7 @@ Click an image to open the interactive version (filters and tooltips) on Tableau
 | 2. PD model | Monotonic coarse classing, WoE/IV, feature selection, logistic scorecard (PDO 20), GBM challenger with monotonic constraints | `notebooks/02, 03, 07`, `src/credit_risk/woe.py` |
 | 3. Validation | Gini/KS, PSI/CSI, Hosmer-Lemeshow, binomial test by band, approved vs. rejected, recalibration + margin of conservatism, monitoring | `notebooks/04–06, 08, 09`, `src/credit_risk/validation.py` |
 | 4. IFRS 9 | Staging (DPD + FICO-drop SICR), PD term structure, LGD, monthly ECL with amortizing EAD and EIR discounting, scenarios | `sql/07`, `notebooks/10–12`, `src/credit_risk/ifrs9.py` |
-| 5. SFC benchmark | Provision under Colombia's consumer reference model (MRCO, matrices A/B) vs. IFRS 9 ECL | `notebooks/15`, `docs/referencias/` |
+| 5. SFC benchmark | Provision under Colombia's consumer reference model (MRCO, matrices A/B) vs. IFRS 9 ECL | `notebooks/15`, `docs/decisiones.md` (D25, sources) |
 
 - **Validation report:** [`reports/informe_validacion.md`](reports/informe_validacion.md) (generated from results, in Spanish)
 - **Decision log:** [`docs/decisiones.md`](docs/decisiones.md) — every modeling decision with its rationale (in Spanish)

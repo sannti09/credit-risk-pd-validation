@@ -479,8 +479,8 @@ sin fecha de último pago asignados al mes 1 (impacto menor).
 - Insignia de estado en el README.
 
 ## D25. Comparación con el modelo de referencia de consumo de la SFC (MRCO) — `notebooks/15_sfc_mrco.py`
-**Fuentes** (`docs/referencias/`): matrices A y B y fórmula → CE 047 de 2016, Anexo 5 Cap. II CBCF (**verificado en
-el texto**); factor K → CE 026 de 2022 (solo créditos originados desde 2023 → no aplica); incumplimiento de consumo =
+**Fuentes** (documentos de la SFC, no se alojan en el repo): matrices A y B y fórmula → CE 047 de 2016, Anexo 5 Cap. II
+CBCF (**verificado en el texto**; [copia pública](https://ambitojuridico.com/sites/default/files/BancoMedios/Archivos/anexocircexterna-0047-16%28superfinanciera%29.pdf)); factor K → CE 026 de 2022 (solo créditos originados desde 2023 → no aplica); incumplimiento de consumo =
 mora > 90 días (texto del Cap. II); vigencia → CE 004 de 2026: la nueva Circular Básica Financiera rige desde el
 1-jun-2026 y la depuración "no implica reclasificación de cartera" en riesgo de crédito.
 **Verificación de supuestos (búsqueda, nov-2026):**
@@ -593,7 +593,7 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
   directa o evento HTTP. Pruebas en `tests/test_lambda.py` (misma salida que el puntuador).
 - **Verificado en AWS:** PD 15,33% y score 536 (idéntico a Docker), fuera de dominio sin PD, inválido → 422.
 - **Sin URL pública por ahora:** se invoca con credenciales (`aws lambda invoke`). Exponerla en internet es decisión
-  aparte (ver resumen al usuario). `aws/cleanup.sh` borra también la función y su rol.
+  aparte (resuelto en D30). `aws/cleanup.sh` borra también la función y su rol.
 
 ## D30. API pública con tope mensual — `aws/deploy_api_gateway.sh`
 - **API Gateway (REST, regional)** → Lambda (integración proxy). Rutas: `POST /score`, `GET /health`.
@@ -624,3 +624,10 @@ evaluada con parámetros calibrados para Colombia → ejercicio de comparación 
 6. **AWS:** `athena_run.sh` ahora falla (exit 1) si una consulta falla; `cleanup.sh` borra también el log group de
    Lambda y verifica qué quedó antes de declarar éxito; mensaje de `make_ddl.py` corregido.
 - Descartado: suprimir celdas pequeñas en `cartera.csv` por privacidad (datos públicos de Kaggle, sin datos personales).
+
+## D33. Organización del repositorio: material público vs. de trabajo
+- **Público (en GitHub):** código (SQL, scripts, paquete, API, AWS, pruebas, CI), README con imágenes, este registro de
+  decisiones, el informe de validación, los resultados (`reports/*.csv`) y los **8 CSV que usa el tablero** de Tableau.
+- **Solo local (en `.gitignore`):** la guía de construcción del tablero (`docs/tableau_guia.md`), los documentos de la
+  SFC (`docs/referencias/`, de terceros: se citan con enlace) y las notas personales.
+- Se dejaron de generar 10 CSV del tablero en español que fueron reemplazados por las versiones en inglés.

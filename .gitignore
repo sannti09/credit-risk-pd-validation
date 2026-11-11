@@ -25,3 +25,7 @@ proyecto_riesgo_credito.md
 
 # Modelos serializados (se regeneran con notebooks/03_scorecard.py)
 models/*.pkl
+
+# Material de trabajo (no se publica; ver D33)
+docs/tableau_guia.md
+docs/referencias/

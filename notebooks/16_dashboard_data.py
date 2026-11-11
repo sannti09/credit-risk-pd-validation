@@ -1,4 +1,4 @@
-"""Exporta los datos del tablero a reports/dashboard/ (D26): tablas SQL (08) + resultados ya calculados.
+"""Exporta los 8 archivos que usa el tablero de Tableau Public a reports/dashboard/ (D26, D32, D33).
 Todo agregado (sin préstamos individuales) -> se puede versionar y publicar."""
 from pathlib import Path
 import shutil
@@ -9,25 +9,11 @@ OUT = Path("reports/dashboard")
 OUT.mkdir(parents=True, exist_ok=True)
 con = duckdb.connect("data/credit.duckdb")
 con.execute(Path("sql/08_dashboard.sql").read_text())
-for t in ("dash_vintage", "dash_originacion", "dash_cartera"):
-    con.sql(f"select * from {t}").df().round(6).to_csv(OUT / f"{t.removeprefix('dash_')}.csv", index=False)
-# Resultados ya calculados por otras fases
-for src, dst in {"calibration_bands_oot.csv": "calibracion_bandas.csv", "monitoring.csv": "monitoreo.csv",
-                 "ifrs9_ecl_by_stage.csv": "ecl_etapas.csv", "ifrs9_scenarios.csv": "ecl_escenarios.csv",
-                 "ifrs9_sensitivity.csv": "ecl_sensibilidad.csv", "sfc_mrco_comparison.csv": "sfc_calificaciones.csv",
-                 "sfc_vs_ifrs9_bridge.csv": "sfc_puente.csv", "challenger_performance.csv": "desempeno_modelos.csv",
-                 "ifrs9_default_timing.csv": "momento_default.csv"}.items():
-    if (Path("reports") / src).exists():
-        shutil.copy(Path("reports") / src, OUT / dst)
-# Ajustes para Tableau: nombrar la primera columna (índice) y quitar filas "total" (Tableau suma por su cuenta)
+# Hoja 1 (Vintage): curvas de cosecha desde SQL. Hoja 2 (Calibration): bandas calculadas por 13_readme_chart.
+con.sql("select * from dash_vintage").df().round(6).to_csv(OUT / "vintage.csv", index=False)
+shutil.copy("reports/calibration_bands_oot.csv", OUT / "calibracion_bandas.csv")
 import pandas as pd  # noqa: E402
 
-for f, name in {"ecl_escenarios.csv": "escenario", "ecl_sensibilidad.csv": "supuesto", "monitoreo.csv": "cohorte",
-                "ecl_etapas.csv": "etapa", "sfc_calificaciones.csv": "calificacion"}.items():
-    t = pd.read_csv(OUT / f)
-    t = t.rename(columns={t.columns[0]: name})
-    t = t[t[name].astype(str) != "total"]
-    t.to_csv(OUT / f, index=False)
 # ---- Hojas 3-5 del tablero, en inglés y formato "largo" (D32) ----
 VARS = {"fico_low": "FICO score", "annual_inc": "Annual income", "avg_cur_bal": "Avg. current balance",
         "dti": "Debt-to-income", "acc_open_past_24mths": "Accounts opened (24m)", "home_ownership": "Home ownership",
